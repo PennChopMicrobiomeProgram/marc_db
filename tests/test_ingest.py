@@ -21,7 +21,22 @@ def connection(engine):
 
 @pytest.fixture
 def sample_data() -> pd.DataFrame:
-    return pd.DataFrame({"SampleId": [1, 2, 3], "IsolateId": ["A", "B", "C"], "AliquotId": [1, 2, 3], "SubjectId": ["A", "B", "C"], "SpecimenId": [1, 2, 3], "Source": ["A", "B", "C"], "SuspectedOrganism": ["A", "B", "C"], "SpecialCollection": ["A", "B", "C"], "ReceivedDate": ["A", "B", "C"], "CryobankingDate": ["A", "B", "C"], "TubeBarcode": ["A", "B", "C"], "BoxName": ["A", "B", "C"]})
+    return pd.DataFrame(
+        {
+            "SampleId": [1, 2, 3],
+            "IsolateId": ["A", "B", "C"],
+            "AliquotId": [1, 2, 3],
+            "SubjectId": ["A", "B", "C"],
+            "SpecimenId": [1, 2, 3],
+            "Source": ["A", "B", "C"],
+            "SuspectedOrganism": ["A", "B", "C"],
+            "SpecialCollection": ["A", "B", "C"],
+            "ReceivedDate": ["A", "B", "C"],
+            "CryobankingDate": ["A", "B", "C"],
+            "TubeBarcode": ["A", "B", "C"],
+            "BoxName": ["A", "B", "C"],
+        }
+    )
 
 
 def test_ingest_xlsx(sample_data: pd.DataFrame, connection: Connection, tmpdir: Path):

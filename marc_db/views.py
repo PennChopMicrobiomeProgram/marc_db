@@ -1,9 +1,9 @@
-from marc_db.db import get_connection
+from marc_db.db import get_session
 from marc_db.models import Aliquot, Isolate
-from sqlalchemy.sql.expression import select
+from sqlalchemy.orm import Session
 
 
-def get_isolates(n: int = None) -> list[Isolate]:
+def get_isolates(session: Session = get_session(), n: int = None) -> list[Isolate]:
     """
     Get a list of Isolate objects from the database.
 
@@ -13,13 +13,10 @@ def get_isolates(n: int = None) -> list[Isolate]:
     Returns:
     List[Isolate]: A list of Isolate objects.
     """
-    connection = get_connection()
-    query = connection.execute(select(Isolate).limit(n))
-    isolates = query.fetchall()
-    return isolates
+    return session.query(Isolate).limit(n).all()
 
 
-def get_aliquots(n: int = None) -> list[Aliquot]:
+def get_aliquots(session: Session = get_session(), n: int = None) -> list[Aliquot]:
     """
     Get a list of Aliquot objects from the database.
 
@@ -29,7 +26,4 @@ def get_aliquots(n: int = None) -> list[Aliquot]:
     Returns:
     List[Aliquot]: A list of Aliquot objects.
     """
-    connection = get_connection()
-    query = connection.execute(select(Aliquot).limit(n))
-    aliquots = query.fetchall()
-    return aliquots
+    return session.query(Aliquot).limit(n).all()
