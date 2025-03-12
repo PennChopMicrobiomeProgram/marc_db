@@ -1,15 +1,34 @@
 import pytest
 import pandas as pd
-from marc_db.ingest import import_xlsx_to_dataframe
+from pathlib import Path
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Connection
+from marc_db.models import Base
+from marc_db.ingest import ingest_xlsx
 
 
-def test_import_xlsx_to_dataframe():
+@pytest.fixture(scope="module")
+def engine():
+    return create_engine("sqlite:///:memory:")
+
+
+@pytest.fixture(scope="module")
+def connection(engine):
+    connection = engine.connect()
+    Base.metadata.create_all(engine)
+    return connection
+
+
+@pytest.fixture
+def sample_data() -> pd.DataFrame:
+    return pd.DataFrame({"SampleId": [1, 2, 3], "IsolateId": ["A", "B", "C"], "AliquotId": [1, 2, 3], "SubjectId": ["A", "B", "C"], "SpecimenId": [1, 2, 3], "Source": ["A", "B", "C"], "SuspectedOrganism": ["A", "B", "C"], "SpecialCollection": ["A", "B", "C"], "ReceivedDate": ["A", "B", "C"], "CryobankingDate": ["A", "B", "C"], "TubeBarcode": ["A", "B", "C"], "BoxName": ["A", "B", "C"]})
+
+
+def test_ingest_xlsx(sample_data: pd.DataFrame, connection: Connection, tmpdir: Path):
     # Create a sample xlsx file
-    sample_data = {"Column1": [1, 2, 3], "Column2": ["A", "B", "C"]}
-    df = pd.DataFrame(sample_data)
-    file_path = "sample_data.xlsx"
-    df.to_excel(file_path, index=False)
+    fp = tmpdir / "sample_data.xlsx"
+    sample_data.to_excel(fp, index=False)
 
-    # Test the import_xlsx_to_dataframe function
-    imported_df = import_xlsx_to_dataframe(file_path)
-    assert imported_df.equals(df)
+    print(connection)
+    # Ingest the xlsx file
+    df = ingest_xlsx(fp, connection)
