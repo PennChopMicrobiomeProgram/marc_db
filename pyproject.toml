@@ -1,0 +1,15 @@
+[project]
+name = "marc_db"
+description = "A Python library for defining SQLAlchemy models and importing xlsx files using pandas."
+
+[project.dependencies]
+python = "^3.8"
+SQLAlchemy = "^1.4.22"
+pandas = "^1.3.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.setuptools.dynamic]
+version = {attr = "marc_db.__version__"}
