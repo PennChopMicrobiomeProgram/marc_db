@@ -3,8 +3,9 @@ import pandas as pd
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Connection
+from sqlalchemy.orm import sessionmaker
 from marc_db.models import Base
-from marc_db.ingest import ingest_xlsx
+from marc_db.ingest import ingest_tsv
 
 
 @pytest.fixture(scope="module")
@@ -13,37 +14,14 @@ def engine():
 
 
 @pytest.fixture(scope="module")
-def connection(engine):
-    connection = engine.connect()
+def session(engine):
+    Session = sessionmaker(bind=engine)
+    session = Session()
     Base.metadata.create_all(engine)
-    return connection
+    yield session
+    session.close()
 
 
-@pytest.fixture
-def sample_data() -> pd.DataFrame:
-    return pd.DataFrame(
-        {
-            "SampleId": [1, 2, 3],
-            "IsolateId": ["A", "B", "C"],
-            "AliquotId": [1, 2, 3],
-            "SubjectId": ["A", "B", "C"],
-            "SpecimenId": [1, 2, 3],
-            "Source": ["A", "B", "C"],
-            "SuspectedOrganism": ["A", "B", "C"],
-            "SpecialCollection": ["A", "B", "C"],
-            "ReceivedDate": ["A", "B", "C"],
-            "CryobankingDate": ["A", "B", "C"],
-            "TubeBarcode": ["A", "B", "C"],
-            "BoxName": ["A", "B", "C"],
-        }
-    )
-
-
-def test_ingest_xlsx(sample_data: pd.DataFrame, connection: Connection, tmpdir: Path):
-    # Create a sample xlsx file
-    fp = tmpdir / "sample_data.xlsx"
-    sample_data.to_excel(fp, index=False)
-
-    print(connection)
+def test_ingest_xlsx(session, tmpdir: Path):
     # Ingest the xlsx file
-    df = ingest_xlsx(fp, connection)
+    df = ingest_tsv(Path(__file__).parent / "test_anonymized.tsv", session)

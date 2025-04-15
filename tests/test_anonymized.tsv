@@ -1,0 +1,22 @@
+SampleID	sample species	Received by mARC	Cryobanking	sample_source	Note	Technician	Unnamed: 17	special_collection	Tube Type	Tube Barcode	Box-name_position	Subject ID	Specimen ID
+marc.bacteremia.1	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia			a	NA211316439	mARC Bacteremia isolates 1	1.0	1.0
+marc.bacteremia.2	K. pneumonia	2022-03-04	2022-03-04	nasal swab		T'Nia			a	NA211316440	mARC Bacteremia isolates 1	2.0	2.0
+marc.bacteremia.3	S.epidermidis	2022-03-04	2022-03-04	blood culture		T'Nia			a	NA211316441	mARC Bacteremia isolates 1	3.0	3.0
+marc.bacteremia.4		2022-03-04	2022-03-04	nasal swab		T'Nia			a	NA211316442	mARC Bacteremia isolates 1	2.0	2.0
+marc.bacteremia.5	E. coli	2022-03-21	2022-03-21	blood culture		T'Nia			a	NA211316443	mARC Bacteremia isolates 1	3.0	4.0
+marc.bacteremia.6	S. homini	2022-03-21	2022-03-21	nasal swab		T'Nia			a	NA211316444	mARC Bacteremia isolates 1	3.0	5.0
+marc.bacteremia.7	Unknown	2022-03-21	2022-03-21			T'Nia			a	NA211316445	mARC Bacteremia isolates 1	4.0	6.0
+marc.bacteremia.1	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia			b	NA2113164442	mARC Bacteremia isolates 2	1.0	1.0
+marc.bacteremia.2	K. pneumonia	2022-03-04	2022-03-04	nasal swab		T'Nia			b	NA2113164443	mARC Bacteremia isolates 2	2.0	2.0
+marc.bacteremia.3	S.epidermidis	2022-03-04	2022-03-04	blood culture		T'Nia			b	NA2113164444	mARC Bacteremia isolates 2	3.0	3.0
+marc.bacteremia.4		2022-03-04	2022-03-04	nasal swab		T'Nia			b	NA2113164445	mARC Bacteremia isolates 2	2.0	2.0
+marc.bacteremia.5	E. coli	2022-03-21	2022-03-21	blood culture		T'Nia			b	NA2113164446	mARC Bacteremia isolates 2	3.0	4.0
+marc.bacteremia.6	S. homini	2022-03-21	2022-03-21	nasal swab		T'Nia			b	NA2113164447	mARC Bacteremia isolates 2	3.0	5.0
+marc.bacteremia.7	Unknown	2022-03-21	2022-03-21			T'Nia			b	NA2113164448	mARC Bacteremia isolates 2	4.0	6.0
+marc.bacteremia.1	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia			c	NA2113159912	mARC Bacteremia isolates 3	1.0	1.0
+marc.bacteremia.2	K. pneumonia	2022-03-04	2022-03-04	nasal swab		T'Nia			c	NA2113159913	mARC Bacteremia isolates 3	2.0	2.0
+marc.bacteremia.3	S.epidermidis	2022-03-04	2022-03-04	blood culture		T'Nia			c	NA2113159914	mARC Bacteremia isolates 3	3.0	3.0
+marc.bacteremia.4		2022-03-04	2022-03-04	nasal swab		T'Nia			c	NA2113159915	mARC Bacteremia isolates 3	2.0	2.0
+marc.bacteremia.5	E. coli	2022-03-21	2022-03-21	blood culture		T'Nia			c	NA2113159916	mARC Bacteremia isolates 3	3.0	4.0
+marc.bacteremia.6	S. homini	2022-03-21	2022-03-21	nasal swab		T'Nia			c	NA2113159917	mARC Bacteremia isolates 3	3.0	5.0
+marc.bacteremia.7	Unknown	2022-03-21	2022-03-21			T'Nia			c	NA2113159918	mARC Bacteremia isolates 3	4.0	6.0

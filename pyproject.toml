@@ -22,3 +22,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
 version = {attr = "marc_db.__version__"}
+
+[project.scripts]
+marc_db = "marc_db.cli:main"
