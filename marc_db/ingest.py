@@ -4,7 +4,7 @@ from marc_db.models import Isolate
 from sqlalchemy.orm import Session
 
 
-def ingest_tsv(file_path: str, session: Session) -> pd.DataFrame:
+def ingest_tsv(file_path: str, session: Session = None) -> pd.DataFrame:
     """
     Import a tsv file to pandas DataFrame and load it into the database.
 
