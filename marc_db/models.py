@@ -35,5 +35,5 @@ class Aliquot(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     isolate_id = Column(Integer, ForeignKey("isolates.id"), nullable=False)
-    tube_barcode = Column(Text, nullable=False)
-    box_name = Column(Text, nullable=False)
+    tube_barcode = Column(Text)
+    box_name = Column(Text)
