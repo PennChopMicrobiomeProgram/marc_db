@@ -23,5 +23,5 @@ def session(engine):
 
 
 def test_ingest_xlsx(session, tmpdir: Path):
-    # Ingest the xlsx file
+    # Ingest the xlsx file without error
     df = ingest_tsv(Path(__file__).parent / "test_anonymized.tsv", session)
