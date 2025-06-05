@@ -30,7 +30,7 @@ def ingest(session):
 
 
 def test_ingest_xlsx(ingest):
-    df = ingest
+    df, _ = ingest
     assert not df.empty
 
 
