@@ -16,7 +16,7 @@ def get_isolates(
     List[Isolate]: A list of Isolate objects.
     """
     if id:
-        return session.query(Isolate).filter(Isolate.id == id).first()
+        return [session.query(Isolate).filter(Isolate.id == id).first()]
     return session.query(Isolate).limit(n).all()
 
 
@@ -33,5 +33,5 @@ def get_aliquots(
     List[Aliquot]: A list of Aliquot objects.
     """
     if id:
-        return session.query(Aliquot).filter(Aliquot.id == id).first()
+        return [session.query(Aliquot).filter(Aliquot.id == id).first()]
     return session.query(Aliquot).limit(n).all()
