@@ -46,10 +46,10 @@ def ingest_tsv(file_path: str, session: Session = None) -> pd.DataFrame:
     # Convert date columns to datetime
     isolate_df["received_date"] = pd.to_datetime(
         isolate_df["received_date"], errors="coerce"
-    )
+    ).dt.date
     isolate_df["cryobanking_date"] = pd.to_datetime(
         isolate_df["cryobanking_date"], errors="coerce"
-    )
+    ).dt.date
     # Drop rows with NaN values in the date columns
     isolate_df.dropna(subset=["received_date", "cryobanking_date"], inplace=True)
     # Drop duplicates based on subject_id and specimen_id
