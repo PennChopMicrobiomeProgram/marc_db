@@ -40,5 +40,5 @@ def test_views(ingest):
     assert len(get_isolates(session)) > 0
     assert len(get_aliquots(session)) > 0
 
-    assert len(get_isolates(session, id=1)) == 1
+    assert len(get_isolates(session, sample_id="marc.bacteremia.1")) == 1
     assert len(get_aliquots(session, id=1)) == 1

@@ -6,13 +6,8 @@ Base = declarative_base()
 
 class Isolate(Base):
     __tablename__ = "isolates"
-    __tableargs__ = (
-        UniqueConstraint(
-            "subject_id", "specimen_id", name="uq_isolates_subject_id_specimen_id"
-        ),
-    )
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    sample_id = Column(Text, primary_key=True)
     subject_id = Column(Integer, nullable=False)
     specimen_id = Column(Integer, nullable=False)
     source = Column(Text)
@@ -34,6 +29,6 @@ class Aliquot(Base):
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    isolate_id = Column(Integer, ForeignKey("isolates.id"), nullable=False)
+    isolate_id = Column(Text, ForeignKey("isolates.sample_id"), nullable=False)
     tube_barcode = Column(Text)
     box_name = Column(Text)

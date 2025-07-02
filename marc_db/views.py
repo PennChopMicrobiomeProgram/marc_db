@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 
 def get_isolates(
-    session: Session = get_session(), id: int = None, n: int = None
+    session: Session = get_session(), sample_id: str = None, n: int = None
 ) -> list[Isolate]:
     """
     Get a list of Isolate objects from the database.
@@ -15,8 +15,8 @@ def get_isolates(
     Returns:
     List[Isolate]: A list of Isolate objects.
     """
-    if id:
-        return [session.query(Isolate).filter(Isolate.id == id).first()]
+    if sample_id:
+        return [session.query(Isolate).filter(Isolate.sample_id == sample_id).first()]
     return session.query(Isolate).limit(n).all()
 
 
