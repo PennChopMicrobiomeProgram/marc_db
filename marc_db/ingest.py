@@ -52,8 +52,6 @@ def ingest_tsv(file_path: str, session: Session = None) -> pd.DataFrame:
     isolate_df["cryobanking_date"] = pd.to_datetime(
         isolate_df["cryobanking_date"], errors="coerce"
     ).dt.date
-    # Drop rows with NaN values in the date columns
-    isolate_df.dropna(subset=["received_date", "cryobanking_date"], inplace=True)
     # Insert into the database
     isolate_df.to_sql("isolates", con=session.bind, if_exists="append", index=False)
     session.commit()

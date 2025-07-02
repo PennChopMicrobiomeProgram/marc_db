@@ -13,8 +13,8 @@ class Isolate(Base):
     source = Column(Text)
     suspected_organism = Column(Text, default="unknown")
     special_collection = Column(Text)
-    received_date = Column(Date)
-    cryobanking_date = Column(Date)
+    received_date = Column(Date, nullable=True)
+    cryobanking_date = Column(Date, nullable=True)
 
 
 class Aliquot(Base):
