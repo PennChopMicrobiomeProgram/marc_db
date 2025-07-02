@@ -6,18 +6,18 @@ marc.bacteremia.4		2022-03-04	2022-03-04	nasal swab		T'Nia	NICU	a	NA211316442	mA
 marc.bacteremia.5	E. coli	2022-03-21	2022-03-21	blood culture		T'Nia	NICU	a	NA211316443	mARC Bacteremia isolates 1	7.0	4.0
 marc.bacteremia.6	S. homini	2022-03-21	2022-03-21	nasal swab		T'Nia	NICU	a	NA211316444	mARC Bacteremia isolates 1	7.0	5.0
 marc.bacteremia.7	Unknown	2022-03-21	2022-03-21			T'Nia	NICU	a	NA211316445	mARC Bacteremia isolates 1	8.0	6.0
-marc.bacteremia.1	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	b	NA2113164442	mARC Bacteremia isolates 2	5.0	1.0
-marc.bacteremia.2	K. pneumonia	2022-03-04	2022-03-04	nasal swab		T'Nia	surveillance	b	NA2113164443	mARC Bacteremia isolates 2	6.0	2.0
-marc.bacteremia.3	S.epidermidis	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	b	NA2113164444	mARC Bacteremia isolates 2	7.0	3.0
-marc.bacteremia.4		2022-03-04	2022-03-04	nasal swab		T'Nia	NICU	b	NA2113164445	mARC Bacteremia isolates 2	6.0	2.0
-marc.bacteremia.5	E. coli	2022-03-21	2022-03-21	blood culture		T'Nia	NICU	b	NA2113164446	mARC Bacteremia isolates 2	7.0	4.0
-marc.bacteremia.6	S. homini	2022-03-21	2022-03-21	nasal swab		T'Nia	NICU	b	NA2113164447	mARC Bacteremia isolates 2	7.0	5.0
-marc.bacteremia.7	Unknown	2022-03-21	2022-03-21			T'Nia	NICU	b	NA2113164448	mARC Bacteremia isolates 2	8.0	6.0
-marc.bacteremia.1	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	c	NA2113159912	mARC Bacteremia isolates 3	5.0	1.0
-marc.bacteremia.2	K. pneumonia	2022-03-04	2022-03-04	nasal swab		T'Nia	surveillance	c	NA2113159913	mARC Bacteremia isolates 3	6.0	2.0
-marc.bacteremia.3	S.epidermidis	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	c	NA2113159914	mARC Bacteremia isolates 3	7.0	3.0
-marc.bacteremia.4		2022-03-04	2022-03-04	nasal swab		T'Nia	NICU	c	NA2113159915	mARC Bacteremia isolates 3	6.0	2.0
-marc.bacteremia.5	E. coli	2022-03-21	2022-03-21	blood culture		T'Nia	NICU	c	NA2113159916	mARC Bacteremia isolates 3	7.0	4.0
-marc.bacteremia.6	S. homini	2022-03-21	2022-03-21	nasal swab		T'Nia	NICU	c	NA2113159917	mARC Bacteremia isolates 3	7.0	5.0
-marc.bacteremia.7	Unknown	2022-03-21	2022-03-21			T'Nia	NICU	c	NA2113159918	mARC Bacteremia isolates 3	8.0	6.0
-marc.bacteremia.8	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	a			5.0	7.0
+marc.bacteremia.8	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	b	NA2113164442	mARC Bacteremia isolates 2	5.0	1.0
+marc.bacteremia.9	K. pneumonia	2022-03-04	2022-03-04	nasal swab		T'Nia	surveillance	b	NA2113164443	mARC Bacteremia isolates 2	6.0	2.0
+marc.bacteremia.10	S.epidermidis	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	b	NA2113164444	mARC Bacteremia isolates 2	7.0	3.0
+marc.bacteremia.11		2022-03-04	2022-03-04	nasal swab		T'Nia	NICU	b	NA2113164445	mARC Bacteremia isolates 2	6.0	2.0
+marc.bacteremia.12	E. coli	2022-03-21	2022-03-21	blood culture		T'Nia	NICU	b	NA2113164446	mARC Bacteremia isolates 2	7.0	4.0
+marc.bacteremia.13	S. homini	2022-03-21	2022-03-21	nasal swab		T'Nia	NICU	b	NA2113164447	mARC Bacteremia isolates 2	7.0	5.0
+marc.bacteremia.14	Unknown	2022-03-21	2022-03-21			T'Nia	NICU	b	NA2113164448	mARC Bacteremia isolates 2	8.0	6.0
+marc.bacteremia.15	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	c	NA2113159912	mARC Bacteremia isolates 3	5.0	1.0
+marc.bacteremia.16	K. pneumonia	2022-03-04	2022-03-04	nasal swab		T'Nia	surveillance	c	NA2113159913	mARC Bacteremia isolates 3	6.0	2.0
+marc.bacteremia.17	S.epidermidis	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	c	NA2113159914	mARC Bacteremia isolates 3	7.0	3.0
+marc.bacteremia.18		2022-03-04	2022-03-04	nasal swab		T'Nia	NICU	c	NA2113159915	mARC Bacteremia isolates 3	6.0	2.0
+marc.bacteremia.19	E. coli	2022-03-21	2022-03-21	blood culture		T'Nia	NICU	c	NA2113159916	mARC Bacteremia isolates 3	7.0	4.0
+marc.bacteremia.20	S. homini	2022-03-21	2022-03-21	nasal swab		T'Nia	NICU	c	NA2113159917	mARC Bacteremia isolates 3	7.0	5.0
+marc.bacteremia.21	Unknown	2022-03-21	2022-03-21			T'Nia	NICU	c	NA2113159918	mARC Bacteremia isolates 3	8.0	6.0
+marc.bacteremia.22	Unknown	2022-03-04	2022-03-04	blood culture		T'Nia	surveillance	a			5.0	7.0
