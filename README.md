@@ -8,9 +8,9 @@ A simple database and query interface for the microbial archive
 
 ```
 pip install .
-export MARC_DB_URL=sqlite:////path/to/db.sqlite
+export MARC_DB_URL=sqlite:////path/to/db.sqlite  # optional environment variable
 marc_db -h
-marc_db ingest /path/to/data_anonymized.tsv
+marc_db --db sqlite:////path/to/db.sqlite ingest /path/to/data_anonymized.tsv
 ```
 
 This will create a new database at `/path/to/db.sqlite` and ingest the anonymized data from marc_honest at `/path/to/data_anonymized.tsv`.
