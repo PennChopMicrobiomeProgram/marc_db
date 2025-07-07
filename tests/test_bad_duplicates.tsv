@@ -1,0 +1,3 @@
+SampleID	sample species	Received by mARC	Cryobanking	sample_source	Note	Technician	special_collection	Tube Type	Tube Barcode	Box-name_position	Subject ID	Specimen ID
+sample1	Unknown	2022-01-01	2022-01-02	blood culture		TechA	a	NA	barcode1A	Box1	1	101
+sample1	Unknown	2022-01-01	2022-01-02	blood culture		TechA	a	NA	barcode1B	Box1	2	101

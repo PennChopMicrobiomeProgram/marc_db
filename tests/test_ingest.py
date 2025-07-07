@@ -25,7 +25,7 @@ def session(engine):
 @pytest.fixture(scope="module")
 def ingest(session):
     # Ingest the tsv file without error
-    df = ingest_tsv(Path(__file__).parent / "test_anonymized.tsv", session)
+    df = ingest_tsv(Path(__file__).parent / "test_multi_aliquot.tsv", session)
     return df, session
 
 
@@ -40,5 +40,10 @@ def test_views(ingest):
     assert len(get_isolates(session)) > 0
     assert len(get_aliquots(session)) > 0
 
-    assert len(get_isolates(session, sample_id="marc.bacteremia.1")) == 1
+    assert len(get_isolates(session, sample_id="sample1")) == 1
     assert len(get_aliquots(session, id=1)) == 1
+
+
+def test_inconsistent_duplicate_rows(session):
+    with pytest.raises(ValueError):
+        ingest_tsv(Path(__file__).parent / "test_bad_duplicates.tsv", session)
