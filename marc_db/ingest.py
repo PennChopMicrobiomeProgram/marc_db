@@ -21,22 +21,38 @@ def ingest_tsv(file_path: str, session: Session = None) -> pd.DataFrame:
 
     df = pd.read_csv(file_path, delimiter="\t")
 
+    # Expect one aliquot per row but only a single isolate per SampleID.
+    # Check for duplicate isolates and ensure all isolate level fields match.
+    isolate_cols = [
+        "SampleID",
+        "Subject ID",
+        "Specimen ID",
+        "sample_source",
+        "sample species",
+        "special_collection",
+        "Received by mARC",
+        "Cryobanking",
+    ]
+    duplicate_groups = df.duplicated(subset=["SampleID"], keep=False)
+    if duplicate_groups.any():
+        for sample_id, group in df[duplicate_groups].groupby("SampleID"):
+            subset = group[isolate_cols].drop(columns=["SampleID"])
+            if not (subset.nunique(dropna=False) <= 1).all():
+                raise ValueError(
+                    f"Inconsistent isolate information for sample_id {sample_id}"
+                )
+    # Reduce to a single row per isolate for isolate ingestion
+    unique_isolates_df = (
+        df[isolate_cols]
+        .drop_duplicates(subset=["SampleID"], keep="first")
+        .copy()
+    )
+
     iso_before = session.query(Isolate).count()
     ali_before = session.query(Aliquot).count()
 
-    # Extract isolate_df including SampleID for unique identification
-    isolate_df = df[
-        [
-            "SampleID",
-            "Subject ID",
-            "Specimen ID",
-            "sample_source",
-            "sample species",
-            "special_collection",
-            "Received by mARC",
-            "Cryobanking",
-        ]
-    ].copy()
+    # Prepare isolate dataframe from the unique isolate rows
+    isolate_df = unique_isolates_df.copy()
     # Rename columns to match the database schema
     isolate_df.columns = [
         "sample_id",
