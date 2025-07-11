@@ -37,7 +37,9 @@ aliquot7 = Aliquot(isolate_id="sample3", tube_barcode="129", box_name="box1")
 aliquot8 = Aliquot(isolate_id="sample3", tube_barcode="130", box_name="box1")
 
 
-def fill_mock_db(session: Session = get_session()):
+def fill_mock_db(session: Session | None = None):
+    if session is None:
+        session = get_session()
     # Check that db is an empty test db
     assert (
         len(session.query(Isolate).all()) == 0
