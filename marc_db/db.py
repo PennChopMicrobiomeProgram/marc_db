@@ -6,26 +6,24 @@ from marc_db.models import Base
 
 
 def get_marc_db_url() -> str:
-    try:
-        os.environ["MARC_DB_URL"]
-    except KeyError:
-        print("MARC_DB_URL environment variable not set, using in-memory db")
-        return "sqlite:///:memory:"
-    return os.environ["MARC_DB_URL"]
+    """Return the database URL from ``MARC_DB_URL`` or fallback to in-memory."""
+    return os.environ.get("MARC_DB_URL", "sqlite:///:memory:")
 
 
-def create_database(database_url: str = get_marc_db_url()):
+def create_database(database_url: str | None = None):
     """
     Create the database tables that don't exist using the provided database URL.
 
     Parameters:
     database_url (str): The database URL.
     """
+    if database_url is None:
+        database_url = get_marc_db_url()
     engine = create_engine(database_url)
     Base.metadata.create_all(engine, checkfirst=True)
 
 
-def get_connection(database_url: str = get_marc_db_url()) -> Connection:
+def get_connection(database_url: str | None = None) -> Connection:
     """
     Get a connection to the database using the provided database URL.
 
@@ -35,12 +33,14 @@ def get_connection(database_url: str = get_marc_db_url()) -> Connection:
     Returns:
     connection: The connection to the database.
     """
+    if database_url is None:
+        database_url = get_marc_db_url()
     engine = create_engine(database_url)
     connection = engine.connect()
     return connection
 
 
-def get_session(database_url: str = get_marc_db_url()) -> Session:
+def get_session(database_url: str | None = None) -> Session:
     """
     Get a session to the database using the provided database URL.
 
@@ -52,6 +52,8 @@ def get_session(database_url: str = get_marc_db_url()) -> Session:
     """
     from sqlalchemy.orm import sessionmaker
 
+    if database_url is None:
+        database_url = get_marc_db_url()
     engine = create_engine(database_url)
     Session = sessionmaker(bind=engine)
     session = Session()
