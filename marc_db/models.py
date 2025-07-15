@@ -47,6 +47,8 @@ class Assembly(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     isolate_id = Column(Text, ForeignKey("isolates.sample_id"), nullable=False)
+    metagenomic_sample_id = Column(Text)
+    metagenomic_run_number = Column(Text)
     run_number = Column(Text)
     sunbeam_version = Column(Text)
     sbx_sga_version = Column(Text)
