@@ -60,6 +60,7 @@ class AssemblyQC(Base):
     __tablename__ = "assembly_qc"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
     contig_count = Column(Integer)
     genome_size = Column(Integer)
     n50 = Column(Integer)
@@ -76,6 +77,7 @@ class TaxonomicAssignment(Base):
     __tablename__ = "taxonomic_assignments"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
     taxonomic_classification = Column(Text)
     st = Column(Text)
     st_schema = Column(Text)
@@ -86,6 +88,7 @@ class Antimicrobial(Base):
     __tablename__ = "antimicrobials"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
     contig_id = Column(Text)
     gene_symbol = Column(Text)
     gene_name = Column(Text)
