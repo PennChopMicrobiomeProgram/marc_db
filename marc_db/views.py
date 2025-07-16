@@ -1,10 +1,13 @@
+from typing import Optional
 from marc_db.db import get_session
 from marc_db.models import Aliquot, Isolate
 from sqlalchemy.orm import Session
 
 
 def get_isolates(
-    session: Session | None = None, sample_id: str | None = None, n: int | None = None
+    session: Optional[Session] = None,
+    sample_id: Optional[str] = None,
+    n: Optional[int] = None,
 ) -> list[Isolate]:
     if session is None:
         session = get_session()
@@ -23,7 +26,7 @@ def get_isolates(
 
 
 def get_aliquots(
-    session: Session | None = None, id: int | None = None, n: int | None = None
+    session: Optional[Session] = None, id: Optional[int] = None, n: Optional[int] = None
 ) -> list[Aliquot]:
     if session is None:
         session = get_session()

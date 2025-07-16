@@ -43,9 +43,7 @@ def ingest_tsv(file_path: str, session: Session = None) -> pd.DataFrame:
                 )
     # Reduce to a single row per isolate for isolate ingestion
     unique_isolates_df = (
-        df[isolate_cols]
-        .drop_duplicates(subset=["SampleID"], keep="first")
-        .copy()
+        df[isolate_cols].drop_duplicates(subset=["SampleID"], keep="first").copy()
     )
 
     iso_before = session.query(Isolate).count()
