@@ -1,7 +1,10 @@
 import os
+from typing import Optional
+
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import sessionmaker, Session
+
 from marc_db.models import Base
 
 
@@ -10,7 +13,7 @@ def get_marc_db_url() -> str:
     return os.environ.get("MARC_DB_URL", "sqlite:///:memory:")
 
 
-def create_database(database_url: str | None = None):
+def create_database(database_url: Optional[str] = None):
     """
     Create the database tables that don't exist using the provided database URL.
 
@@ -23,7 +26,7 @@ def create_database(database_url: str | None = None):
     Base.metadata.create_all(engine, checkfirst=True)
 
 
-def get_connection(database_url: str | None = None) -> Connection:
+def get_connection(database_url: Optional[str] = None) -> Connection:
     """
     Get a connection to the database using the provided database URL.
 
@@ -40,7 +43,7 @@ def get_connection(database_url: str | None = None) -> Connection:
     return connection
 
 
-def get_session(database_url: str | None = None) -> Session:
+def get_session(database_url: Optional[str] = None) -> Session:
     """
     Get a session to the database using the provided database URL.
 

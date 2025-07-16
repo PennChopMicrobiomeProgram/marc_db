@@ -2,9 +2,10 @@ import pandas as pd
 from marc_db.db import get_session
 from marc_db.models import Aliquot, Isolate
 from sqlalchemy.orm import Session
+from typing import Optional
 
 
-def ingest_tsv(file_path: str, session: Session = None) -> pd.DataFrame:
+def ingest_tsv(file_path: str, session: Optional[Session] = None) -> pd.DataFrame:
     """
     Import a tsv file to pandas DataFrame and load it into the database.
 
@@ -43,9 +44,7 @@ def ingest_tsv(file_path: str, session: Session = None) -> pd.DataFrame:
                 )
     # Reduce to a single row per isolate for isolate ingestion
     unique_isolates_df = (
-        df[isolate_cols]
-        .drop_duplicates(subset=["SampleID"], keep="first")
-        .copy()
+        df[isolate_cols].drop_duplicates(subset=["SampleID"], keep="first").copy()
     )
 
     iso_before = session.query(Isolate).count()

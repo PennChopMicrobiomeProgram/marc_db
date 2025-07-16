@@ -3,6 +3,7 @@ from datetime import datetime
 from marc_db.db import get_session
 from marc_db.models import Aliquot, Base, Isolate
 from sqlalchemy.orm import Session
+from typing import Optional
 
 
 isolate1 = Isolate(
@@ -37,7 +38,7 @@ aliquot7 = Aliquot(isolate_id="sample3", tube_barcode="129", box_name="box1")
 aliquot8 = Aliquot(isolate_id="sample3", tube_barcode="130", box_name="box1")
 
 
-def fill_mock_db(session: Session | None = None):
+def fill_mock_db(session: Optional[Session] = None):
     if session is None:
         session = get_session()
     # Check that db is an empty test db

@@ -1,4 +1,12 @@
-from sqlalchemy import Column, Integer, Text, Date, ForeignKey, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    Integer,
+    Text,
+    Date,
+    Float,
+    ForeignKey,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -19,7 +27,7 @@ class Isolate(Base):
 
 class Aliquot(Base):
     __tablename__ = "aliquots"
-    __tableargs__ = (
+    __table_args__ = (
         UniqueConstraint(
             "isolate_id",
             "tube_barcode",
@@ -32,3 +40,59 @@ class Aliquot(Base):
     isolate_id = Column(Text, ForeignKey("isolates.sample_id"), nullable=False)
     tube_barcode = Column(Text)
     box_name = Column(Text)
+
+
+class Assembly(Base):
+    __tablename__ = "assemblies"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    isolate_id = Column(Text, ForeignKey("isolates.sample_id"), nullable=False)
+    metagenomic_sample_id = Column(Text)
+    metagenomic_run_id = Column(Text)
+    run_number = Column(Text)
+    sunbeam_version = Column(Text)
+    sbx_sga_version = Column(Text)
+    config_file = Column(Text)
+    sunbeam_output_path = Column(Text)
+
+
+class AssemblyQC(Base):
+    __tablename__ = "assembly_qc"
+
+    assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
+    contig_count = Column(Integer)
+    genome_size = Column(Integer)
+    n50 = Column(Integer)
+    gc_content = Column(Float)
+    cds = Column(Integer)
+    completeness = Column(Float)
+    contamination = Column(Float)
+    min_contig_coverage = Column(Float)
+    avg_contig_coverage = Column(Float)
+    max_contig_coverage = Column(Float)
+
+
+class TaxonomicAssignment(Base):
+    __tablename__ = "taxonomic_assignments"
+
+    assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
+    taxonomic_classification = Column(Text)
+    taxonomic_abundance = Column(Float)
+    st = Column(Text)
+    st_schema = Column(Text)
+    allele_assignment = Column(Text)
+
+
+class Antimicrobial(Base):
+    __tablename__ = "antimicrobials"
+
+    assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
+    contig_id = Column(Text)
+    gene_symbol = Column(Text)
+    gene_name = Column(Text)
+    accession = Column(Text)
+    element_type = Column(Text)
+    resistance_product = Column(Text)
