@@ -27,7 +27,7 @@ class Isolate(Base):
 
 class Aliquot(Base):
     __tablename__ = "aliquots"
-    __tableargs__ = (
+    __table_args__ = (
         UniqueConstraint(
             "isolate_id",
             "tube_barcode",
@@ -48,12 +48,12 @@ class Assembly(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     isolate_id = Column(Text, ForeignKey("isolates.sample_id"), nullable=False)
     metagenomic_sample_id = Column(Text)
-    metagenomic_run_number = Column(Text)
+    metagenomic_run_id = Column(Text)
     run_number = Column(Text)
     sunbeam_version = Column(Text)
     sbx_sga_version = Column(Text)
     config_file = Column(Text)
-    assembly_fasta_path = Column(Text)
+    sunbeam_output_path = Column(Text)
 
 
 class AssemblyQC(Base):
@@ -79,6 +79,7 @@ class TaxonomicAssignment(Base):
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
     isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
     taxonomic_classification = Column(Text)
+    taxonomic_abundance = Column(Float)
     st = Column(Text)
     st_schema = Column(Text)
     allele_assignment = Column(Text)

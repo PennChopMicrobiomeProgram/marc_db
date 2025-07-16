@@ -1,7 +1,10 @@
 import os
+from typing import Optional
+
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import sessionmaker, Session
+
 from marc_db.models import Base
 
 
@@ -12,9 +15,6 @@ def get_marc_db_url() -> str:
         print("MARC_DB_URL environment variable not set, using in-memory db")
         return "sqlite:///:memory:"
     return os.environ["MARC_DB_URL"]
-
-
-from typing import Optional
 
 
 def create_database(database_url: Optional[str] = None):
