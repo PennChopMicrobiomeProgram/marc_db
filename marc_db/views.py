@@ -4,8 +4,10 @@ from sqlalchemy.orm import Session
 
 
 def get_isolates(
-    session: Session = get_session(), sample_id: str = None, n: int = None
+    session: Session | None = None, sample_id: str | None = None, n: int | None = None
 ) -> list[Isolate]:
+    if session is None:
+        session = get_session()
     """
     Get a list of Isolate objects from the database.
 
@@ -21,8 +23,10 @@ def get_isolates(
 
 
 def get_aliquots(
-    session: Session = get_session(), id: int = None, n: int = None
+    session: Session | None = None, id: int | None = None, n: int | None = None
 ) -> list[Aliquot]:
+    if session is None:
+        session = get_session()
     """
     Get a list of Aliquot objects from the database.
 

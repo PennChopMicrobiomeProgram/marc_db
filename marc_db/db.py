@@ -9,12 +9,8 @@ from marc_db.models import Base
 
 
 def get_marc_db_url() -> str:
-    try:
-        os.environ["MARC_DB_URL"]
-    except KeyError:
-        print("MARC_DB_URL environment variable not set, using in-memory db")
-        return "sqlite:///:memory:"
-    return os.environ["MARC_DB_URL"]
+    """Return the database URL from ``MARC_DB_URL`` or fallback to in-memory."""
+    return os.environ.get("MARC_DB_URL", "sqlite:///:memory:")
 
 
 def create_database(database_url: Optional[str] = None):
