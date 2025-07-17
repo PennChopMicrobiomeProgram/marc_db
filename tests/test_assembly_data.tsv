@@ -1,0 +1,3 @@
+Sample	contig_count	genome_size	n50	gc_content	cds	completeness	contamination	min_contig_coverage	avg_contig_coverage	max_contig_coverage	taxonomic_classification	taxonomic_abundance	st	st_schema	allele_assignment	contig_id	gene_symbol	gene_name	accession	element_type	resistance_product
+sample1	10	5000000	30000	50.0	4500	99.0	1.0	10	20	30	Escherichia coli	0.9	ST1	schema1	allele1	c1	blaA	geneA	acc1	plasmid	protein1
+sample2	20	6000000	40000	51.0	4600	98.0	2.0	15	25	35	Klebsiella pneumoniae	0.8	ST2	schema2	allele2	c3	blaC	geneC	acc3	chromosome	enzyme3
