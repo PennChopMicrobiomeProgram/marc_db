@@ -1,6 +1,13 @@
 from typing import Optional
 from marc_db.db import get_session
-from marc_db.models import Aliquot, Isolate
+from marc_db.models import (
+    Aliquot,
+    Isolate,
+    Assembly,
+    AssemblyQC,
+    TaxonomicAssignment,
+    Antimicrobial,
+)
 from sqlalchemy.orm import Session
 
 
@@ -42,3 +49,54 @@ def get_aliquots(
     if id:
         return [session.query(Aliquot).filter(Aliquot.id == id).first()]
     return session.query(Aliquot).limit(n).all()
+
+
+def get_assemblies(
+    session: Optional[Session] = None,
+    id: Optional[int] = None,
+    n: Optional[int] = None,
+) -> list[Assembly]:
+    if session is None:
+        session = get_session()
+    if id:
+        return [session.query(Assembly).filter(Assembly.id == id).first()]
+    return session.query(Assembly).limit(n).all()
+
+
+def get_assembly_qc(
+    session: Optional[Session] = None,
+    assembly_id: Optional[int] = None,
+    n: Optional[int] = None,
+) -> list[tuple[AssemblyQC, str]]:
+    if session is None:
+        session = get_session()
+    query = session.query(AssemblyQC, Assembly.isolate_id).join(Assembly)
+    if assembly_id:
+        return [query.filter(AssemblyQC.assembly_id == assembly_id).first()]
+    return query.limit(n).all()
+
+
+def get_taxonomic_assignments(
+    session: Optional[Session] = None,
+    assembly_id: Optional[int] = None,
+    n: Optional[int] = None,
+) -> list[tuple[TaxonomicAssignment, str]]:
+    if session is None:
+        session = get_session()
+    query = session.query(TaxonomicAssignment, Assembly.isolate_id).join(Assembly)
+    if assembly_id:
+        return [query.filter(TaxonomicAssignment.assembly_id == assembly_id).first()]
+    return query.limit(n).all()
+
+
+def get_antimicrobials(
+    session: Optional[Session] = None,
+    assembly_id: Optional[int] = None,
+    n: Optional[int] = None,
+) -> list[tuple[Antimicrobial, str]]:
+    if session is None:
+        session = get_session()
+    query = session.query(Antimicrobial, Assembly.isolate_id).join(Assembly)
+    if assembly_id:
+        return [query.filter(Antimicrobial.assembly_id == assembly_id).first()]
+    return query.limit(n).all()
