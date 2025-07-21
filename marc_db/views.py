@@ -99,5 +99,6 @@ def get_antimicrobials(
         session = get_session()
     query = session.query(Antimicrobial, Assembly.isolate_id).join(Assembly)
     if assembly_id:
-        return [query.filter(Antimicrobial.assembly_id == assembly_id).first()]
+        result = query.filter(Antimicrobial.assembly_id == assembly_id).first()
+        return [result] if result else []
     return query.limit(n).all()
