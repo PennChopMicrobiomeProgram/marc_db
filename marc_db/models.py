@@ -7,7 +7,7 @@ from sqlalchemy import (
     ForeignKey,
     UniqueConstraint,
 )
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
@@ -23,6 +23,8 @@ class Isolate(Base):
     special_collection = Column(Text)
     received_date = Column(Date, nullable=True)
     cryobanking_date = Column(Date, nullable=True)
+
+    assemblies = relationship("Assembly", back_populates="isolate")
 
 
 class Aliquot(Base):
@@ -55,12 +57,19 @@ class Assembly(Base):
     config_file = Column(Text)
     sunbeam_output_path = Column(Text)
 
+    isolate = relationship("Isolate", back_populates="assemblies")
+    assembly_qcs = relationship("AssemblyQC", back_populates="assembly", uselist=False)
+    taxonomic_assignments = relationship(
+        "TaxonomicAssignment", back_populates="assembly"
+    )
+    antimicrobials = relationship("Antimicrobial", back_populates="assembly")
+
 
 class AssemblyQC(Base):
     __tablename__ = "assembly_qc"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
-    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
+    assembly = relationship("Assembly", back_populates="assembly_qcs")
     contig_count = Column(Integer)
     genome_size = Column(Integer)
     n50 = Column(Integer)
@@ -77,7 +86,7 @@ class TaxonomicAssignment(Base):
     __tablename__ = "taxonomic_assignments"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
-    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
+    assembly = relationship("Assembly", back_populates="taxonomic_assignments")
     taxonomic_classification = Column(Text)
     taxonomic_abundance = Column(Float)
     st = Column(Text)
@@ -89,7 +98,7 @@ class Antimicrobial(Base):
     __tablename__ = "antimicrobials"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
-    isolate_id = Column(Text, ForeignKey("isolates.sample_id"))
+    assembly = relationship("Assembly", back_populates="antimicrobials")
     contig_id = Column(Text)
     gene_symbol = Column(Text)
     gene_name = Column(Text)
