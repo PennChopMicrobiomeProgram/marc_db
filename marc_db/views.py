@@ -59,7 +59,8 @@ def get_assemblies(
     if session is None:
         session = get_session()
     if id:
-        return [session.query(Assembly).filter(Assembly.id == id).first()]
+        result = session.query(Assembly).filter(Assembly.id == id).first()
+        return [result] if result else []
     return session.query(Assembly).limit(n).all()
 
 
