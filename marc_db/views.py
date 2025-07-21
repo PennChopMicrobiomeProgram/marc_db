@@ -73,7 +73,8 @@ def get_assembly_qc(
         session = get_session()
     query = session.query(AssemblyQC, Assembly.isolate_id).join(Assembly)
     if assembly_id:
-        return [query.filter(AssemblyQC.assembly_id == assembly_id).first()]
+        result = query.filter(AssemblyQC.assembly_id == assembly_id).first()
+        return [result] if result else []
     return query.limit(n).all()
 
 
@@ -86,7 +87,8 @@ def get_taxonomic_assignments(
         session = get_session()
     query = session.query(TaxonomicAssignment, Assembly.isolate_id).join(Assembly)
     if assembly_id:
-        return [query.filter(TaxonomicAssignment.assembly_id == assembly_id).first()]
+        result = query.filter(TaxonomicAssignment.assembly_id == assembly_id).first()
+        return [result] if result else []
     return query.limit(n).all()
 
 
