@@ -58,7 +58,7 @@ class Assembly(Base):
     sunbeam_output_path = Column(Text)
 
     isolate = relationship("Isolate", back_populates="assemblies")
-    assembly_qc = relationship("AssemblyQC", back_populates="assembly", uselist=False)
+    assembly_qcs = relationship("AssemblyQC", back_populates="assembly", uselist=False)
     taxonomic_assignments = relationship("TaxonomicAssignment", back_populates="assembly")
     antimicrobials = relationship("Antimicrobial", back_populates="assembly")
 
