@@ -147,7 +147,6 @@ def ingest_assembly_tsv(
         first = g.iloc[0]
         qc = AssemblyQC(
             assembly_id=asm.id,
-            isolate_id=sample,
             contig_count=first.get("contig_count"),
             genome_size=first.get("genome_size"),
             n50=first.get("n50"),
@@ -163,7 +162,6 @@ def ingest_assembly_tsv(
 
         tax = TaxonomicAssignment(
             assembly_id=asm.id,
-            isolate_id=sample,
             taxonomic_classification=first.get("taxonomic_classification"),
             taxonomic_abundance=first.get("taxonomic_abundance"),
             st=first.get("st"),
@@ -175,7 +173,6 @@ def ingest_assembly_tsv(
         for _, row in g.iterrows():
             amr = Antimicrobial(
                 assembly_id=asm.id,
-                isolate_id=sample,
                 contig_id=row.get("contig_id"),
                 gene_symbol=row.get("gene_symbol"),
                 gene_name=row.get("gene_name"),
