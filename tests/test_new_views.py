@@ -2,7 +2,14 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from marc_db.models import Base, Isolate, Assembly, AssemblyQC, TaxonomicAssignment, Antimicrobial
+from marc_db.models import (
+    Base,
+    Isolate,
+    Assembly,
+    AssemblyQC,
+    TaxonomicAssignment,
+    Antimicrobial,
+)
 from marc_db.views import (
     get_assemblies,
     get_assembly_qc,
@@ -36,7 +43,9 @@ def setup_data(session):
     session.commit()
 
     qc = AssemblyQC(assembly_id=assembly.id, contig_count=10)
-    tax = TaxonomicAssignment(assembly_id=assembly.id, taxonomic_classification="k__Bacteria")
+    tax = TaxonomicAssignment(
+        assembly_id=assembly.id, taxonomic_classification="k__Bacteria"
+    )
     amr = Antimicrobial(assembly_id=assembly.id, gene_symbol="blaCTX")
     session.add_all([qc, tax, amr])
     session.commit()

@@ -59,7 +59,9 @@ class Assembly(Base):
 
     isolate = relationship("Isolate", back_populates="assemblies")
     assembly_qcs = relationship("AssemblyQC", back_populates="assembly", uselist=False)
-    taxonomic_assignments = relationship("TaxonomicAssignment", back_populates="assembly")
+    taxonomic_assignments = relationship(
+        "TaxonomicAssignment", back_populates="assembly"
+    )
     antimicrobials = relationship("Antimicrobial", back_populates="assembly")
 
 
@@ -67,7 +69,7 @@ class AssemblyQC(Base):
     __tablename__ = "assembly_qc"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
-    assembly = relationship("Assembly", back_populates="assembly_qc")
+    assembly = relationship("Assembly", back_populates="assembly_qcs")
     contig_count = Column(Integer)
     genome_size = Column(Integer)
     n50 = Column(Integer)
