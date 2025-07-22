@@ -137,6 +137,27 @@ def ingest_assembly_tsv(
 
     df = pd.read_csv(file_path, sep="\t")
 
+    # Normalize column names from common pipeline outputs
+    df.columns = df.columns.str.strip()
+    rename_map = {
+        "Number of Contigs": "contig_count",
+        "Genome Size": "genome_size",
+        "N50": "n50",
+        "GC Content": "gc_content",
+        "CDS": "cds",
+        "CheckM_Completeness": "completeness",
+        "CheckM_Contamination": "contamination",
+        "Coverage": "avg_contig_coverage",
+        "Schema": "st_schema",
+        "ST": "st",
+        "Alleles": "allele_assignment",
+        "Mash_Contamination": "mash_contamination",
+        "Contaminated_Spp": "mash_contaminated_spp",
+        "Taxonomic_Abundance": "taxonomic_abundance",
+        "Taxonomic_Classification": "taxonomic_classification",
+    }
+    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
+
     for sample, g in df.groupby("Sample"):
         asm = Assembly(
             isolate_id=sample,
@@ -171,23 +192,39 @@ def ingest_assembly_tsv(
             assembly_id=asm.id,
             taxonomic_classification=_as_python(first.get("taxonomic_classification")),
             taxonomic_abundance=_as_python(first.get("taxonomic_abundance")),
+            mash_contamination=_as_python(first.get("mash_contamination")),
+            mash_contaminated_spp=_as_python(first.get("mash_contaminated_spp")),
             st=_as_python(first.get("st")),
             st_schema=_as_python(first.get("st_schema")),
             allele_assignment=_as_python(first.get("allele_assignment")),
         )
         session.add(tax)
 
-        for _, row in g.iterrows():
-            amr = Antimicrobial(
-                assembly_id=asm.id,
-                contig_id=_as_python(row.get("contig_id")),
-                gene_symbol=_as_python(row.get("gene_symbol")),
-                gene_name=_as_python(row.get("gene_name")),
-                accession=_as_python(row.get("accession")),
-                element_type=_as_python(row.get("element_type")),
-                resistance_product=_as_python(row.get("resistance_product")),
-            )
-            session.add(amr)
+        gene_cols = [
+            "contig_id",
+            "gene_symbol",
+            "gene_name",
+            "accession",
+            "element_type",
+            "resistance_product",
+        ]
+
+        has_gene_cols = any(col in g.columns for col in gene_cols)
+
+        if has_gene_cols:
+            for _, row in g.iterrows():
+                if not any(pd.notna(row.get(c)) for c in gene_cols):
+                    continue
+                amr = Antimicrobial(
+                    assembly_id=asm.id,
+                    contig_id=_as_python(row.get("contig_id")),
+                    gene_symbol=_as_python(row.get("gene_symbol")),
+                    gene_name=_as_python(row.get("gene_name")),
+                    accession=_as_python(row.get("accession")),
+                    element_type=_as_python(row.get("element_type")),
+                    resistance_product=_as_python(row.get("resistance_product")),
+                )
+                session.add(amr)
 
     session.commit()
     return df

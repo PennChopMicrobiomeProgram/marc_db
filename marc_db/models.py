@@ -89,6 +89,8 @@ class TaxonomicAssignment(Base):
     assembly = relationship("Assembly", back_populates="taxonomic_assignments")
     taxonomic_classification = Column(Text)
     taxonomic_abundance = Column(Float)
+    mash_contamination = Column(Float)
+    mash_contaminated_spp = Column(Text)
     st = Column(Text)
     st_schema = Column(Text)
     allele_assignment = Column(Text)
