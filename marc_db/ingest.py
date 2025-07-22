@@ -12,6 +12,13 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 
+def _as_python(value):
+    """Return a plain Python value suitable for SQL insertion."""
+    if pd.isna(value):
+        return None
+    return value.item() if hasattr(value, "item") else value
+
+
 def ingest_tsv(file_path: str, session: Optional[Session] = None) -> pd.DataFrame:
     """
     Import a tsv file to pandas DataFrame and load it into the database.
@@ -147,38 +154,38 @@ def ingest_assembly_tsv(
         first = g.iloc[0]
         qc = AssemblyQC(
             assembly_id=asm.id,
-            contig_count=first.get("contig_count"),
-            genome_size=first.get("genome_size"),
-            n50=first.get("n50"),
-            gc_content=first.get("gc_content"),
-            cds=first.get("cds"),
-            completeness=first.get("completeness"),
-            contamination=first.get("contamination"),
-            min_contig_coverage=first.get("min_contig_coverage"),
-            avg_contig_coverage=first.get("avg_contig_coverage"),
-            max_contig_coverage=first.get("max_contig_coverage"),
+            contig_count=_as_python(first.get("contig_count")),
+            genome_size=_as_python(first.get("genome_size")),
+            n50=_as_python(first.get("n50")),
+            gc_content=_as_python(first.get("gc_content")),
+            cds=_as_python(first.get("cds")),
+            completeness=_as_python(first.get("completeness")),
+            contamination=_as_python(first.get("contamination")),
+            min_contig_coverage=_as_python(first.get("min_contig_coverage")),
+            avg_contig_coverage=_as_python(first.get("avg_contig_coverage")),
+            max_contig_coverage=_as_python(first.get("max_contig_coverage")),
         )
         session.add(qc)
 
         tax = TaxonomicAssignment(
             assembly_id=asm.id,
-            taxonomic_classification=first.get("taxonomic_classification"),
-            taxonomic_abundance=first.get("taxonomic_abundance"),
-            st=first.get("st"),
-            st_schema=first.get("st_schema"),
-            allele_assignment=first.get("allele_assignment"),
+            taxonomic_classification=_as_python(first.get("taxonomic_classification")),
+            taxonomic_abundance=_as_python(first.get("taxonomic_abundance")),
+            st=_as_python(first.get("st")),
+            st_schema=_as_python(first.get("st_schema")),
+            allele_assignment=_as_python(first.get("allele_assignment")),
         )
         session.add(tax)
 
         for _, row in g.iterrows():
             amr = Antimicrobial(
                 assembly_id=asm.id,
-                contig_id=row.get("contig_id"),
-                gene_symbol=row.get("gene_symbol"),
-                gene_name=row.get("gene_name"),
-                accession=row.get("accession"),
-                element_type=row.get("element_type"),
-                resistance_product=row.get("resistance_product"),
+                contig_id=_as_python(row.get("contig_id")),
+                gene_symbol=_as_python(row.get("gene_symbol")),
+                gene_name=_as_python(row.get("gene_name")),
+                accession=_as_python(row.get("accession")),
+                element_type=_as_python(row.get("element_type")),
+                resistance_product=_as_python(row.get("resistance_product")),
             )
             session.add(amr)
 
