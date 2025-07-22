@@ -1,0 +1,9 @@
+Sample	Contig ID	Gene Symbol	Gene Name	Element Type	Resistance Product	Accession of Closest Sequence
+marc.bacteremia.3391	contig00003	fosB	FosB/FosD family fosfomycin resistance bacillithiol transferase	AMR	FOSFOMYCIN	WP_000920239.1
+marc.bacteremia.3391	contig00004	mepA	multidrug efflux MATE transporter MepA	AMR	TETRACYCLINE	BAB41547.1
+marc.bacteremia.3391	contig00004	selX	staphylococcal enterotoxin-like toxin X	VIRULENCE	NA	AEI60187.1
+marc.bacteremia.3391	contig00005	icaC	polysaccharide intercellular adhesin biosynthesis/export protein IcaC	VIRULENCE	NA	AUU58561.1
+marc.bacteremia.3385	contig00016	fosB	FosB family fosfomycin resistance bacillithiol transferase	AMR	FOSFOMYCIN	WP_002437790.1
+marc.bacteremia.3385	contig00085	mupA	mupirocin-resistant isoleucine--tRNA ligase MupA	AMR	MUPIROCIN	WP_000163435.1
+marc.bacteremia.3385	contig00088	mecR1	beta-lactam sensor/signal transducer MecR1	AMR	BETA-LACTAM	WP_000952923.1
+marc.bacteremia.3385	contig00088	mecA	PBP2a family beta-lactam-resistant peptidoglycan transpeptidase MecA	AMR	BETA-LACTAM	WP_000721310.1
