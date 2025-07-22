@@ -41,3 +41,12 @@ def test_counts(ingest_data):
     assert session.query(AssemblyQC).count() == 2
     assert session.query(TaxonomicAssignment).count() == 2
     assert session.query(Antimicrobial).count() == 2
+
+
+def test_mash_fields(ingest_data):
+    _, session = ingest_data
+    tax = session.query(TaxonomicAssignment).order_by(TaxonomicAssignment.assembly_id).all()
+    assert tax[0].mash_contamination == 0.05
+    assert tax[0].mash_contaminated_spp == "Bacillus"
+    assert tax[1].mash_contamination == 0.1
+    assert tax[1].mash_contaminated_spp == "Listeria"
