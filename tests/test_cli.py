@@ -41,3 +41,26 @@ def test_cli_ingest_assembly():
         text=True,
     )
     assert result.returncode == 0
+
+
+def test_cli_ingest_amr():
+    asm_path = Path(__file__).parent / "test_assembly_data.tsv"
+    amr_path = Path(__file__).parent / "test_amr_data.tsv"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "marc_db.cli",
+            "--db",
+            "sqlite:///:memory:",
+            "ingest_assembly",
+            str(asm_path),
+            str(amr_path),
+            "--run-number",
+            "1",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert result.returncode == 0
