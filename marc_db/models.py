@@ -18,7 +18,6 @@ class Isolate(Base):
     sample_id = Column(Text, primary_key=True)
     subject_id = Column(Integer, nullable=False)
     specimen_id = Column(Integer, nullable=False)
-    source = Column(Text)
     suspected_organism = Column(Text, default="unknown")
     special_collection = Column(Text)
     received_date = Column(Date, nullable=True)

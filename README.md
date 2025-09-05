@@ -28,3 +28,15 @@ session = get_session()
 print(session.query(Isolate).limit(10))
 print(get_isolates(session, n = 10))
 ```
+
+### Database migrations
+
+Schema changes are managed with [Alembic](https://alembic.sqlalchemy.org/). After installing the
+package, apply migrations with:
+
+```
+alembic upgrade head
+```
+
+By default the migration configuration uses the database URL from the `MARC_DB_URL`
+environment variable, falling back to an in-memory SQLite database.
