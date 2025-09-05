@@ -226,3 +226,69 @@ def ingest_assembly_tsv(
 
     session.commit()
     return df
+
+
+def ingest_antimicrobial_tsv(
+    file_path: str,
+    *,
+    metagenomic_sample_id: Optional[str] = None,
+    metagenomic_run_id: Optional[str] = None,
+    run_number: Optional[str] = None,
+    sunbeam_version: Optional[str] = None,
+    sbx_sga_version: Optional[str] = None,
+    config_file: Optional[str] = None,
+    sunbeam_output_path: Optional[str] = None,
+    session: Optional[Session] = None,
+) -> pd.DataFrame:
+    """Ingest antimicrobial gene data from ``file_path``.
+
+    Each row represents a gene call for a given sample. A new ``Assembly``
+    record is created for each unique sample and all antimicrobial gene rows are
+    linked to that assembly.
+    """
+
+    if session is None:
+        session = get_session()
+
+    df = pd.read_csv(file_path, sep="\t")
+    df.dropna(how="all", inplace=True)
+
+    df.columns = df.columns.str.strip()
+    rename_map = {
+        "Contig ID": "contig_id",
+        "Gene Symbol": "gene_symbol",
+        "Gene Name": "gene_name",
+        "Accession of Closest Sequence": "accession",
+        "Element Type": "element_type",
+        "Resistance Product": "resistance_product",
+    }
+    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
+
+    for sample, g in df.groupby("Sample"):
+        asm = Assembly(
+            isolate_id=sample,
+            metagenomic_sample_id=metagenomic_sample_id,
+            metagenomic_run_id=metagenomic_run_id,
+            run_number=run_number,
+            sunbeam_version=sunbeam_version,
+            sbx_sga_version=sbx_sga_version,
+            config_file=config_file,
+            sunbeam_output_path=sunbeam_output_path,
+        )
+        session.add(asm)
+        session.flush()
+
+        for _, row in g.iterrows():
+            amr = Antimicrobial(
+                assembly_id=asm.id,
+                contig_id=_as_python(row.get("contig_id")),
+                gene_symbol=_as_python(row.get("gene_symbol")),
+                gene_name=_as_python(row.get("gene_name")),
+                accession=_as_python(row.get("accession")),
+                element_type=_as_python(row.get("element_type")),
+                resistance_product=_as_python(row.get("resistance_product")),
+            )
+            session.add(amr)
+
+    session.commit()
+    return df

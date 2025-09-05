@@ -98,7 +98,8 @@ class TaxonomicAssignment(Base):
 class Antimicrobial(Base):
     __tablename__ = "antimicrobials"
 
-    assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    assembly_id = Column(Integer, ForeignKey("assemblies.id"), nullable=False)
     assembly = relationship("Assembly", back_populates="antimicrobials")
     contig_id = Column(Text)
     gene_symbol = Column(Text)
