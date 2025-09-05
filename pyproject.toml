@@ -3,18 +3,18 @@ name = "marc_db"
 description = "A Python library for defining and interacting with the mARC db"
 dynamic = ["version"]
 dependencies = [
-    "SQLAlchemy==2.0.43",
-    "pandas==2.3.2",
-    "openpyxl==3.1.5",
-    "alembic==1.13.1",
+    "SQLAlchemy~=2.0",
+    "pandas~=2.3",
+    "openpyxl~=3.1",
+    "alembic~=1.16",
 ]
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
 dev = [
-    "black",
-    "pytest",
-    "pytest-cov",
+    "black~=25.1",
+    "pytest~=8.4",
+    "pytest-cov~=6.2",
 ]
 
 [build-system]
