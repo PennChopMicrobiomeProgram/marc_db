@@ -4,7 +4,7 @@ description = "A Python library for defining and interacting with the mARC db"
 dynamic = ["version"]
 dependencies = [
     "SQLAlchemy==2.0.43",
-    "pandas==2.3.1",
+    "pandas==2.3.2",
     "openpyxl==3.1.5",
     "alembic==1.13.1",
 ]
