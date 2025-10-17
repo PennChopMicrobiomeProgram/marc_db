@@ -48,12 +48,12 @@ class Assembly(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     isolate_id = Column(Text, ForeignKey("isolates.sample_id"), nullable=False)
-    metagenomic_sample_id = Column(Text)
-    metagenomic_run_id = Column(Text)
+    metagenomic_sample_id = Column(Text, nullable=True)
+    metagenomic_run_id = Column(Text, nullable=True)
+    nanopore_path = Column(Text, nullable=True)
     run_number = Column(Text)
     sunbeam_version = Column(Text)
     sbx_sga_version = Column(Text)
-    config_file = Column(Text)
     sunbeam_output_path = Column(Text)
 
     isolate = relationship("Isolate", back_populates="assemblies")

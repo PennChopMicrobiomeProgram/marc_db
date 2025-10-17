@@ -36,4 +36,3 @@ def test_amr_counts(ingest_data):
     _, session = ingest_data
     assert session.query(Assembly).count() == 2
     assert session.query(Antimicrobial).count() == 8
-

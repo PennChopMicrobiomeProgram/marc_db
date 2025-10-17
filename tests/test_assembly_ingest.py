@@ -2,7 +2,14 @@ import pytest
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from marc_db.models import Base, Isolate, Assembly, AssemblyQC, TaxonomicAssignment, Antimicrobial
+from marc_db.models import (
+    Base,
+    Isolate,
+    Assembly,
+    AssemblyQC,
+    TaxonomicAssignment,
+    Antimicrobial,
+)
 from marc_db.ingest import ingest_tsv, ingest_assembly_tsv
 
 
@@ -45,7 +52,11 @@ def test_counts(ingest_data):
 
 def test_mash_fields(ingest_data):
     _, session = ingest_data
-    tax = session.query(TaxonomicAssignment).order_by(TaxonomicAssignment.assembly_id).all()
+    tax = (
+        session.query(TaxonomicAssignment)
+        .order_by(TaxonomicAssignment.assembly_id)
+        .all()
+    )
     assert tax[0].mash_contamination == 0.05
     assert tax[0].mash_contaminated_spp == "Bacillus"
     assert tax[1].mash_contamination == 0.1

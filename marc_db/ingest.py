@@ -154,7 +154,9 @@ def ingest_assembly_tsv(
         "Taxonomic_Abundance": "taxonomic_abundance",
         "Taxonomic_Classification": "taxonomic_classification",
     }
-    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
+    df.rename(
+        columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True
+    )
 
     for sample, g in df.groupby("Sample"):
         asm = Assembly(
@@ -262,7 +264,9 @@ def ingest_antimicrobial_tsv(
         "Element Type": "element_type",
         "Resistance Product": "resistance_product",
     }
-    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
+    df.rename(
+        columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True
+    )
 
     for sample, g in df.groupby("Sample"):
         asm = Assembly(
