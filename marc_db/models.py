@@ -54,6 +54,7 @@ class Assembly(Base):
     run_number = Column(Text)
     sunbeam_version = Column(Text)
     sbx_sga_version = Column(Text)
+    config_file = Column(Text)
     sunbeam_output_path = Column(Text)
 
     isolate = relationship("Isolate", back_populates="assemblies")
