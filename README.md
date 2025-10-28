@@ -32,8 +32,15 @@ print(get_isolates(session, n = 10))
 
 ### Database migrations
 
-Schema changes are managed with [Alembic](https://alembic.sqlalchemy.org/). After installing the
-package, apply migrations with:
+Schema changes are managed with [Alembic](https://alembic.sqlalchemy.org/).
+
+After making the schema updates, generate migration scripts with:
+
+```
+alembic revision --autogenerate -m "Description of your changes"
+```
+
+After installing the package, apply migrations with:
 
 ```
 alembic upgrade head
