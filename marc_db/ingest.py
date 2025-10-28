@@ -1,4 +1,9 @@
+from pathlib import Path
+from typing import Optional
+
 import pandas as pd
+from sqlalchemy.orm import Session
+
 from marc_db.db import get_session
 from marc_db.models import (
     Aliquot,
@@ -8,8 +13,6 @@ from marc_db.models import (
     TaxonomicAssignment,
     Antimicrobial,
 )
-from sqlalchemy.orm import Session
-from typing import Optional
 
 
 def _as_python(value):
@@ -17,6 +20,21 @@ def _as_python(value):
     if pd.isna(value):
         return None
     return value.item() if hasattr(value, "item") else value
+
+
+def _derive_sunbeam_output_path(
+    config_file: Optional[str], sunbeam_output_path: Optional[str]
+) -> Optional[str]:
+    """Return the sunbeam output path, deriving it from ``config_file`` if needed."""
+
+    if sunbeam_output_path:
+        return sunbeam_output_path
+
+    if config_file:
+        cfg_path = Path(config_file)
+        return str(cfg_path.parent / "sunbeam_output")
+
+    return None
 
 
 def ingest_tsv(file_path: str, session: Optional[Session] = None) -> pd.DataFrame:
@@ -154,7 +172,11 @@ def ingest_assembly_tsv(
         "Taxonomic_Abundance": "taxonomic_abundance",
         "Taxonomic_Classification": "taxonomic_classification",
     }
-    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
+    df.rename(
+        columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True
+    )
+
+    resolved_output_path = _derive_sunbeam_output_path(config_file, sunbeam_output_path)
 
     for sample, g in df.groupby("Sample"):
         asm = Assembly(
@@ -164,8 +186,7 @@ def ingest_assembly_tsv(
             run_number=run_number,
             sunbeam_version=sunbeam_version,
             sbx_sga_version=sbx_sga_version,
-            config_file=config_file,
-            sunbeam_output_path=sunbeam_output_path,
+            sunbeam_output_path=resolved_output_path,
         )
         session.add(asm)
         session.flush()  # populate asm.id
@@ -262,7 +283,11 @@ def ingest_antimicrobial_tsv(
         "Element Type": "element_type",
         "Resistance Product": "resistance_product",
     }
-    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
+    df.rename(
+        columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True
+    )
+
+    resolved_output_path = _derive_sunbeam_output_path(config_file, sunbeam_output_path)
 
     for sample, g in df.groupby("Sample"):
         asm = Assembly(
@@ -272,8 +297,7 @@ def ingest_antimicrobial_tsv(
             run_number=run_number,
             sunbeam_version=sunbeam_version,
             sbx_sga_version=sbx_sga_version,
-            config_file=config_file,
-            sunbeam_output_path=sunbeam_output_path,
+            sunbeam_output_path=resolved_output_path,
         )
         session.add(asm)
         session.flush()
