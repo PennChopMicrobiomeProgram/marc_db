@@ -1,8 +1,9 @@
+import argparse
 import random
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
-from marc_db.db import get_session
+from marc_db.db import create_database, get_marc_db_url, get_session
 from marc_db.models import (
     Aliquot,
     Antimicrobial,
@@ -161,7 +162,14 @@ def _build_mock_dataset(
     return isolates, aliquots, assemblies, assembly_qcs, tax_assignments, antimicrobials
 
 
-def fill_mock_db(session: Optional[Session] = None):
+def fill_mock_db(
+    session: Optional[Session] = None,
+    *,
+    num_isolates: int = 75,
+    min_aliquots_per_isolate: int = 3,
+    max_aliquots_per_isolate: int = 5,
+    seed: int = 1337,
+):
     if session is None:
         session = get_session()
     # Check that db is an empty test db
@@ -169,7 +177,75 @@ def fill_mock_db(session: Optional[Session] = None):
         len(session.query(Isolate).all()) == 0
     ), "Database is not empty, I can only add test data to an empty database"
 
-    data = _build_mock_dataset()
+    if min_aliquots_per_isolate > max_aliquots_per_isolate:
+        raise ValueError("Minimum aliquots per isolate cannot exceed the maximum value.")
+
+    data = _build_mock_dataset(
+        num_isolates=num_isolates,
+        min_aliquots_per_isolate=min_aliquots_per_isolate,
+        max_aliquots_per_isolate=max_aliquots_per_isolate,
+        seed=seed,
+    )
     all_records: List = sum((list(group) for group in data), [])
     session.add_all(all_records)
     session.commit()
+
+
+def _parse_args():
+    parser = argparse.ArgumentParser(
+        description="Populate an empty MARC DB instance with randomized mock data.",
+    )
+    parser.add_argument(
+        "--db",
+        dest="db_url",
+        default=None,
+        help="Database URL to use. Defaults to MARC_DB_URL or in-memory sqlite.",
+    )
+    parser.add_argument(
+        "--isolates",
+        type=int,
+        default=75,
+        help="Number of isolates to generate.",
+    )
+    parser.add_argument(
+        "--min-aliquots",
+        type=int,
+        default=3,
+        help="Minimum aliquots per isolate.",
+    )
+    parser.add_argument(
+        "--max-aliquots",
+        type=int,
+        default=5,
+        help="Maximum aliquots per isolate.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=1337,
+        help="Seed for deterministic mock data generation.",
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = _parse_args()
+    db_url = args.db_url or get_marc_db_url()
+
+    create_database(db_url)
+    session = get_session(db_url)
+    fill_mock_db(
+        session,
+        num_isolates=args.isolates,
+        min_aliquots_per_isolate=args.min_aliquots,
+        max_aliquots_per_isolate=args.max_aliquots,
+        seed=args.seed,
+    )
+    print(
+        f"Loaded mock data into {db_url} with {args.isolates} isolates and "
+        f"aliquots between {args.min_aliquots}-{args.max_aliquots} each."
+    )
+
+
+if __name__ == "__main__":
+    main()
