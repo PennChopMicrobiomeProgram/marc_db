@@ -62,7 +62,7 @@ class Assembly(Base):
     taxonomic_assignments = relationship(
         "TaxonomicAssignment", back_populates="assembly"
     )
-    typing = relationship("Typing", back_populates="assembly", uselist=False)
+    contaminants = relationship("Typing", back_populates="assembly")
     antimicrobials = relationship("Antimicrobial", back_populates="assembly")
 
 
@@ -90,18 +90,18 @@ class TaxonomicAssignment(Base):
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), nullable=False)
     assembly = relationship("Assembly", back_populates="taxonomic_assignments")
     tool = Column(Text)
-    taxonomic_classification = Column(Text)
-    taxonomic_abundance = Column(Float, nullable=True)
+    classification = Column(Text)
+    comment = Column(Text, nullable=True)
     
 
-class Typing(Base):
-    __tablename__ = "typings"
+class Contaminant(Base):
+    __tablename__ = "contaminants"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
-    assembly = relationship("Assembly", back_populates="taxonomic_assignments")
-    st = Column(Text)
-    st_schema = Column(Text)
-    allele_assignment = Column(Text)
+    assembly = relationship("Assembly", back_populates="contaminants")
+    tool = Column(Text)
+    confidence = Column(Text)
+    classification = Column(Text)
 
 
 class Antimicrobial(Base):
