@@ -57,10 +57,11 @@ class Assembly(Base):
     sunbeam_output_path = Column(Text)
 
     isolate = relationship("Isolate", back_populates="assemblies")
-    assembly_qcs = relationship("AssemblyQC", back_populates="assembly", uselist=False)
+    assembly_qc = relationship("AssemblyQC", back_populates="assembly", uselist=False)
     taxonomic_assignments = relationship(
         "TaxonomicAssignment", back_populates="assembly"
     )
+    typing = relationship("Typing", back_populates="assembly", uselist=False)
     antimicrobials = relationship("Antimicrobial", back_populates="assembly")
 
 
@@ -84,7 +85,8 @@ class AssemblyQC(Base):
 class TaxonomicAssignment(Base):
     __tablename__ = "taxonomic_assignments"
 
-    assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    assembly_id = Column(Integer, ForeignKey("assemblies.id"), nullable=False)
     assembly = relationship("Assembly", back_populates="taxonomic_assignments")
     tool = Column(Text)
     taxonomic_classification = Column(Text)
@@ -94,6 +96,8 @@ class TaxonomicAssignment(Base):
 class Typing(Base):
     __tablename__ = "typings"
 
+    assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    assembly = relationship("Assembly", back_populates="taxonomic_assignments")
     st = Column(Text)
     st_schema = Column(Text)
     allele_assignment = Column(Text)
