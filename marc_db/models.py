@@ -55,6 +55,7 @@ class Assembly(Base):
     sunbeam_version = Column(Text)
     sbx_sga_version = Column(Text)
     sunbeam_output_path = Column(Text)
+    ncbi_id = Column(Text, nullable=True)
 
     isolate = relationship("Isolate", back_populates="assemblies")
     assembly_qc = relationship("AssemblyQC", back_populates="assembly", uselist=False)
