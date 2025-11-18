@@ -86,10 +86,14 @@ class TaxonomicAssignment(Base):
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
     assembly = relationship("Assembly", back_populates="taxonomic_assignments")
+    tool = Column(Text)
     taxonomic_classification = Column(Text)
-    taxonomic_abundance = Column(Float)
-    mash_contamination = Column(Float)
-    mash_contaminated_spp = Column(Text)
+    taxonomic_abundance = Column(Float, nullable=True)
+    
+
+class Typing(Base):
+    __tablename__ = "typings"
+
     st = Column(Text)
     st_schema = Column(Text)
     allele_assignment = Column(Text)
