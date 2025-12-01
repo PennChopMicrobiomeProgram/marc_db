@@ -9,6 +9,7 @@ from marc_db.models import (
     Antimicrobial,
     Assembly,
     AssemblyQC,
+    Contaminant,
     Isolate,
     TaxonomicAssignment,
 )
@@ -26,7 +27,12 @@ ORGANISMS = [
 SPECIAL_COLLECTIONS = ["none", "blood", "urine", "respiratory", "wound"]
 BOX_NAMES = [f"box-{letter}{number}" for letter in "ABC" for number in range(1, 5)]
 GENE_SYMBOLS = ["blaKPC", "blaNDM", "blaOXA", "mcr-1", "aadA", "tetA"]
-GENE_PRODUCTS = ["beta-lactamase", "colistin resistance", "aminoglycoside resistance", "tetracycline resistance"]
+GENE_PRODUCTS = [
+    "beta-lactamase",
+    "colistin resistance",
+    "aminoglycoside resistance",
+    "tetracycline resistance",
+]
 
 
 def _random_date(rng: random.Random, start_year: int = 2020, end_year: int = 2024):
@@ -67,9 +73,13 @@ def _create_aliquots(
     return aliquots, aliquot_index
 
 
-def _create_assembly_bundle(
-    rng: random.Random, isolate_id: str
-) -> Tuple[Assembly, AssemblyQC, TaxonomicAssignment, List[Antimicrobial]]:
+def _create_assembly_bundle(rng: random.Random, isolate_id: str) -> Tuple[
+    Assembly,
+    AssemblyQC,
+    List[TaxonomicAssignment],
+    List[Contaminant],
+    List[Antimicrobial],
+]:
     assembly = Assembly(
         isolate_id=isolate_id,
         metagenomic_sample_id=f"MG-{rng.randint(1000, 9999)}",
@@ -95,18 +105,28 @@ def _create_assembly_bundle(
         max_contig_coverage=round(rng.uniform(60.0, 150.0), 2),
     )
 
-    tax_assignment = TaxonomicAssignment(
+    mlst_assignment = TaxonomicAssignment(
         assembly=assembly,
-        taxonomic_classification=rng.choice(ORGANISMS),
-        taxonomic_abundance=round(rng.uniform(50.0, 100.0), 2),
-        mash_contamination=round(rng.uniform(0.0, 5.0), 2),
-        mash_contaminated_spp=rng.choice(ORGANISMS),
-        st=str(rng.randint(1, 500)),
-        st_schema=rng.choice(["mlst", "cgmlst"]),
-        allele_assignment=";".join(
-            f"gene{idx}:{rng.randint(1, 10)}" for idx in range(1, 4)
-        ),
+        tool="mlst",
+        classification=f"ST-{rng.randint(1, 500)}",
+        comment=";".join(f"gene{idx}:{rng.randint(1, 10)}" for idx in range(1, 4)),
     )
+
+    sylph_assignment = TaxonomicAssignment(
+        assembly=assembly,
+        tool="sylph",
+        classification=rng.choice(ORGANISMS),
+        comment=f"abundance={round(rng.uniform(50.0, 100.0), 2)}%",
+    )
+
+    contaminants = [
+        Contaminant(
+            assembly=assembly,
+            tool="mash",
+            confidence=f"{round(rng.uniform(90.0, 100.0), 2)}%",
+            classification=rng.choice(ORGANISMS),
+        )
+    ]
 
     antimicrobials: List[Antimicrobial] = []
     for amr_index in range(rng.randint(1, 3)):
@@ -123,7 +143,9 @@ def _create_assembly_bundle(
             )
         )
 
-    return assembly, assembly_qc, tax_assignment, antimicrobials
+    tax_assignments = [mlst_assignment, sylph_assignment]
+
+    return assembly, assembly_qc, tax_assignments, contaminants, antimicrobials
 
 
 def _build_mock_dataset(
@@ -138,6 +160,7 @@ def _build_mock_dataset(
     assemblies: List[Assembly] = []
     assembly_qcs: List[AssemblyQC] = []
     tax_assignments: List[TaxonomicAssignment] = []
+    contaminants: List[Contaminant] = []
     antimicrobials: List[Antimicrobial] = []
 
     aliquot_index = 1
@@ -151,15 +174,28 @@ def _build_mock_dataset(
         )
         aliquots.extend(aliquot_batch)
 
-        assembly, assembly_qc, tax_assignment, amr_records = _create_assembly_bundle(
-            rng, isolate.sample_id
-        )
+        (
+            assembly,
+            assembly_qc,
+            assembly_tax_assignments,
+            assembly_contaminants,
+            amr_records,
+        ) = _create_assembly_bundle(rng, isolate.sample_id)
         assemblies.append(assembly)
         assembly_qcs.append(assembly_qc)
-        tax_assignments.append(tax_assignment)
+        tax_assignments.extend(assembly_tax_assignments)
+        contaminants.extend(assembly_contaminants)
         antimicrobials.extend(amr_records)
 
-    return isolates, aliquots, assemblies, assembly_qcs, tax_assignments, antimicrobials
+    return (
+        isolates,
+        aliquots,
+        assemblies,
+        assembly_qcs,
+        tax_assignments,
+        contaminants,
+        antimicrobials,
+    )
 
 
 def fill_mock_db(
@@ -178,7 +214,9 @@ def fill_mock_db(
     ), "Database is not empty, I can only add test data to an empty database"
 
     if min_aliquots_per_isolate > max_aliquots_per_isolate:
-        raise ValueError("Minimum aliquots per isolate cannot exceed the maximum value.")
+        raise ValueError(
+            "Minimum aliquots per isolate cannot exceed the maximum value."
+        )
 
     data = _build_mock_dataset(
         num_isolates=num_isolates,

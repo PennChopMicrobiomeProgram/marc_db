@@ -62,7 +62,7 @@ class Assembly(Base):
     taxonomic_assignments = relationship(
         "TaxonomicAssignment", back_populates="assembly"
     )
-    contaminants = relationship("Typing", back_populates="assembly")
+    contaminants = relationship("Contaminant", back_populates="assembly")
     antimicrobials = relationship("Antimicrobial", back_populates="assembly")
 
 
@@ -70,7 +70,7 @@ class AssemblyQC(Base):
     __tablename__ = "assembly_qc"
 
     assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
-    assembly = relationship("Assembly", back_populates="assembly_qcs")
+    assembly = relationship("Assembly", back_populates="assembly_qc")
     contig_count = Column(Integer)
     genome_size = Column(Integer)
     n50 = Column(Integer)
@@ -92,12 +92,13 @@ class TaxonomicAssignment(Base):
     tool = Column(Text)
     classification = Column(Text)
     comment = Column(Text, nullable=True)
-    
+
 
 class Contaminant(Base):
     __tablename__ = "contaminants"
 
-    assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    assembly_id = Column(Integer, ForeignKey("assemblies.id"), nullable=False)
     assembly = relationship("Assembly", back_populates="contaminants")
     tool = Column(Text)
     confidence = Column(Text)
