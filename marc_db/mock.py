@@ -27,7 +27,12 @@ ORGANISMS = [
 SPECIAL_COLLECTIONS = ["none", "blood", "urine", "respiratory", "wound"]
 BOX_NAMES = [f"box-{letter}{number}" for letter in "ABC" for number in range(1, 5)]
 GENE_SYMBOLS = ["blaKPC", "blaNDM", "blaOXA", "mcr-1", "aadA", "tetA"]
-GENE_PRODUCTS = ["beta-lactamase", "colistin resistance", "aminoglycoside resistance", "tetracycline resistance"]
+GENE_PRODUCTS = [
+    "beta-lactamase",
+    "colistin resistance",
+    "aminoglycoside resistance",
+    "tetracycline resistance",
+]
 
 
 def _random_date(rng: random.Random, start_year: int = 2020, end_year: int = 2024):
@@ -68,9 +73,7 @@ def _create_aliquots(
     return aliquots, aliquot_index
 
 
-def _create_assembly_bundle(
-    rng: random.Random, isolate_id: str
-) -> Tuple[
+def _create_assembly_bundle(rng: random.Random, isolate_id: str) -> Tuple[
     Assembly,
     AssemblyQC,
     List[TaxonomicAssignment],
@@ -106,9 +109,7 @@ def _create_assembly_bundle(
         assembly=assembly,
         tool="mlst",
         classification=f"ST-{rng.randint(1, 500)}",
-        comment=";".join(
-            f"gene{idx}:{rng.randint(1, 10)}" for idx in range(1, 4)
-        ),
+        comment=";".join(f"gene{idx}:{rng.randint(1, 10)}" for idx in range(1, 4)),
     )
 
     sylph_assignment = TaxonomicAssignment(
@@ -213,7 +214,9 @@ def fill_mock_db(
     ), "Database is not empty, I can only add test data to an empty database"
 
     if min_aliquots_per_isolate > max_aliquots_per_isolate:
-        raise ValueError("Minimum aliquots per isolate cannot exceed the maximum value.")
+        raise ValueError(
+            "Minimum aliquots per isolate cannot exceed the maximum value."
+        )
 
     data = _build_mock_dataset(
         num_isolates=num_isolates,

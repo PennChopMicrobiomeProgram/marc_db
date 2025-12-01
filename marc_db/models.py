@@ -92,12 +92,13 @@ class TaxonomicAssignment(Base):
     tool = Column(Text)
     classification = Column(Text)
     comment = Column(Text, nullable=True)
-    
+
 
 class Contaminant(Base):
     __tablename__ = "contaminants"
 
-    assembly_id = Column(Integer, ForeignKey("assemblies.id"), primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    assembly_id = Column(Integer, ForeignKey("assemblies.id"), nullable=False)
     assembly = relationship("Assembly", back_populates="contaminants")
     tool = Column(Text)
     confidence = Column(Text)
