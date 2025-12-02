@@ -2,7 +2,12 @@ import argparse
 import sys
 from marc_db import __version__
 from marc_db.db import create_database, get_session, get_marc_db_url
-from marc_db.ingest import ingest_tsv, ingest_assembly_tsv, ingest_antimicrobial_tsv
+from marc_db.ingest import (
+    ingest_tsv,
+    ingest_assembly_tsv,
+    ingest_antimicrobial_tsv,
+    ingest_from_tsvs,
+)
 from marc_db.mock import fill_mock_db
 
 
@@ -49,12 +54,50 @@ def main():
     elif args.command == "ingest":
         parser_ingest = argparse.ArgumentParser(
             prog="marc_db ingest",
-            usage="%(prog)s <file_path>",
-            description="Ingest data from a tsv into the database.",
+            usage="%(prog)s [--isolates FILE] [--assemblies FILE] [--assembly-qcs FILE] "
+            "[--taxonomic-assignments FILE] [--contaminants FILE] [--antimicrobials FILE]",
+            description=(
+                "Ingest isolates, assemblies, QC, taxonomic assignments, contaminants, "
+                "and antimicrobials from TSV files."
+            ),
         )
-        parser_ingest.add_argument("file_path", help="Path to the file to ingest.")
+        parser_ingest.add_argument("file_path", nargs="?", help="Legacy isolates TSV path.")
+        parser_ingest.add_argument("--isolates", help="TSV containing isolates/aliquots.")
+        parser_ingest.add_argument("--assemblies", help="TSV containing assemblies.")
+        parser_ingest.add_argument("--assembly-qcs", help="TSV containing assembly QC records.")
+        parser_ingest.add_argument(
+            "--taxonomic-assignments", help="TSV containing taxonomic assignments."
+        )
+        parser_ingest.add_argument("--contaminants", help="TSV containing contaminant calls.")
+        parser_ingest.add_argument("--antimicrobials", help="TSV containing antimicrobial calls.")
+        parser_ingest.add_argument("--metagenomic-sample-id")
+        parser_ingest.add_argument("--metagenomic-run-id")
+        parser_ingest.add_argument("--run-number")
+        parser_ingest.add_argument("--sunbeam-version")
+        parser_ingest.add_argument("--sbx-sga-version")
+        parser_ingest.add_argument("--config-file")
+        parser_ingest.add_argument("--sunbeam-output-path")
+        parser_ingest.add_argument("--yes", action="store_true", help="Skip confirmation prompt.")
         args_ingest = parser_ingest.parse_args(remaining)
-        ingest_tsv(args_ingest.file_path, get_session(db_url))
+        create_database(db_url)
+        isolates_path = args_ingest.isolates or args_ingest.file_path
+        ingest_from_tsvs(
+            isolates=isolates_path,
+            assemblies=args_ingest.assemblies,
+            assembly_qcs=args_ingest.assembly_qcs,
+            taxonomic_assignments=args_ingest.taxonomic_assignments,
+            contaminants=args_ingest.contaminants,
+            antimicrobials=args_ingest.antimicrobials,
+            yes=args_ingest.yes,
+            session=get_session(db_url),
+            run_number=args_ingest.run_number,
+            sunbeam_version=args_ingest.sunbeam_version,
+            sbx_sga_version=args_ingest.sbx_sga_version,
+            metagenomic_sample_id=args_ingest.metagenomic_sample_id,
+            metagenomic_run_id=args_ingest.metagenomic_run_id,
+            config_file=args_ingest.config_file,
+            sunbeam_output_path=args_ingest.sunbeam_output_path,
+        )
     elif args.command == "ingest_assembly":
         parser_asm = argparse.ArgumentParser(
             prog="marc_db ingest_assembly",
