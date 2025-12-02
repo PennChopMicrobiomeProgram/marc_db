@@ -1,0 +1,3 @@
+SampleID	classification	comment	tool
+sample1	Escherichia coli	ST1 schema1	mlst
+sample2	Klebsiella pneumoniae	ST2 schema2	mlst

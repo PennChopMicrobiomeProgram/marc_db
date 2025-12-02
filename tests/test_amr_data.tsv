@@ -1,9 +1,9 @@
-Sample	Contig ID	Gene Symbol	Gene Name	Element Type	Resistance Product	Accession of Closest Sequence
-marc.bacteremia.3391	contig00003	fosB	FosB/FosD family fosfomycin resistance bacillithiol transferase	AMR	FOSFOMYCIN	WP_000920239.1
-marc.bacteremia.3391	contig00004	mepA	multidrug efflux MATE transporter MepA	AMR	TETRACYCLINE	BAB41547.1
-marc.bacteremia.3391	contig00004	selX	staphylococcal enterotoxin-like toxin X	VIRULENCE	NA	AEI60187.1
-marc.bacteremia.3391	contig00005	icaC	polysaccharide intercellular adhesin biosynthesis/export protein IcaC	VIRULENCE	NA	AUU58561.1
-marc.bacteremia.3385	contig00016	fosB	FosB family fosfomycin resistance bacillithiol transferase	AMR	FOSFOMYCIN	WP_002437790.1
-marc.bacteremia.3385	contig00085	mupA	mupirocin-resistant isoleucine--tRNA ligase MupA	AMR	MUPIROCIN	WP_000163435.1
-marc.bacteremia.3385	contig00088	mecR1	beta-lactam sensor/signal transducer MecR1	AMR	BETA-LACTAM	WP_000952923.1
-marc.bacteremia.3385	contig00088	mecA	PBP2a family beta-lactam-resistant peptidoglycan transpeptidase MecA	AMR	BETA-LACTAM	WP_000721310.1
+SampleID	contig_id	gene_symbol	gene_name	accession	element_type	resistance_product
+sample1	contig00003	fosB	FosB family protein	WP_000920239.1	AMR	FOSFOMYCIN
+sample1	contig00004	mepA	MATE transporter	BAB41547.1	AMR	TETRACYCLINE
+sample1	contig00005	selX	enterotoxin X	AEI60187.1	VIRULENCE	NA
+sample1	contig00006	icaC	adhesin IcaC	AUU58561.1	VIRULENCE	NA
+sample2	contig00016	fosB	FosB family protein	WP_002437790.1	AMR	FOSFOMYCIN
+sample2	contig00085	mupA	mupirocin-resistant ligase	WP_000163435.1	AMR	MUPIROCIN
+sample2	contig00088	mecR1	beta-lactam sensor	WP_000952923.1	AMR	BETA-LACTAM
+sample2	contig00089	mecA	PBP2a transpeptidase	WP_000721310.1	AMR	BETA-LACTAM
