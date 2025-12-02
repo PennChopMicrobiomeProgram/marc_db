@@ -55,15 +55,25 @@ def main():
                 "and antimicrobials from TSV files."
             ),
         )
-        parser_ingest.add_argument("--isolates", help="TSV containing isolates/aliquots.")
+        parser_ingest.add_argument(
+            "--isolates", help="TSV containing isolates/aliquots."
+        )
         parser_ingest.add_argument("--assemblies", help="TSV containing assemblies.")
-        parser_ingest.add_argument("--assembly-qcs", help="TSV containing assembly QC records.")
+        parser_ingest.add_argument(
+            "--assembly-qcs", help="TSV containing assembly QC records."
+        )
         parser_ingest.add_argument(
             "--taxonomic-assignments", help="TSV containing taxonomic assignments."
         )
-        parser_ingest.add_argument("--contaminants", help="TSV containing contaminant calls.")
-        parser_ingest.add_argument("--antimicrobials", help="TSV containing antimicrobial calls.")
-        parser_ingest.add_argument("--yes", action="store_true", help="Skip confirmation prompt.")
+        parser_ingest.add_argument(
+            "--contaminants", help="TSV containing contaminant calls."
+        )
+        parser_ingest.add_argument(
+            "--antimicrobials", help="TSV containing antimicrobial calls."
+        )
+        parser_ingest.add_argument(
+            "--yes", action="store_true", help="Skip confirmation prompt."
+        )
         args_ingest = parser_ingest.parse_args(remaining)
         create_database(db_url)
         ingest_from_tsvs(

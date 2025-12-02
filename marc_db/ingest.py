@@ -60,7 +60,9 @@ def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
         "Sample": "SampleID",
         "Run": "run_number",
     }
-    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
+    df.rename(
+        columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True
+    )
     return df
 
 
@@ -99,7 +101,9 @@ def _parse_sample_column(df: pd.DataFrame) -> str:
     raise ValueError("Could not find a sample identifier column (SampleID or Sample)")
 
 
-def _ingest_isolates(file_path: str, session: Session, report: Dict[str, Dict[str, object]]):
+def _ingest_isolates(
+    file_path: str, session: Session, report: Dict[str, Dict[str, object]]
+):
     df = pd.read_csv(file_path, delimiter="\t")
     isolate_cols = [
         "SampleID",
@@ -142,7 +146,8 @@ def _ingest_isolates(file_path: str, session: Session, report: Dict[str, Dict[st
 
     sample_ids = isolate_df["sample_id"].tolist()
     existing_isolates = {
-        iso.sample_id for iso in session.query(Isolate).filter(Isolate.sample_id.in_(sample_ids))
+        iso.sample_id
+        for iso in session.query(Isolate).filter(Isolate.sample_id.in_(sample_ids))
     }
     duplicates = list(existing_isolates)
     added = 0
@@ -156,16 +161,16 @@ def _ingest_isolates(file_path: str, session: Session, report: Dict[str, Dict[st
     aliquot_df.columns = ["tube_barcode", "box_name", "isolate_id"]
     existing_aliquots = {
         (a.isolate_id, a.tube_barcode, a.box_name)
-        for a in session.query(Aliquot)
-        .filter(Aliquot.isolate_id.in_(sample_ids))
-        .all()
+        for a in session.query(Aliquot).filter(Aliquot.isolate_id.in_(sample_ids)).all()
     }
     seen_new: set[Tuple[str, str, str]] = set()
     aliquot_added = 0
     for _, row in aliquot_df.iterrows():
         key = (row.isolate_id, row.tube_barcode, row.box_name)
         if key in existing_aliquots or key in seen_new:
-            duplicates.append(f"aliquot {row.isolate_id}:{row.tube_barcode}:{row.box_name}")
+            duplicates.append(
+                f"aliquot {row.isolate_id}:{row.tube_barcode}:{row.box_name}"
+            )
             continue
         session.add(Aliquot(**row.to_dict()))
         aliquot_added += 1
@@ -178,7 +183,9 @@ def _ingest_isolates(file_path: str, session: Session, report: Dict[str, Dict[st
     }
 
 
-def _find_assembly_key(isolate_id: str, run_number: Optional[str]) -> Tuple[str, Optional[str]]:
+def _find_assembly_key(
+    isolate_id: str, run_number: Optional[str]
+) -> Tuple[str, Optional[str]]:
     return (isolate_id, run_number or "")
 
 
@@ -243,7 +250,9 @@ def _ingest_assemblies(
     ]
 
     for sample_id, group in df.groupby(sample_col):
-        key = _find_assembly_key(sample_id, _as_python(group.iloc[0].get("run_number", run_number)))
+        key = _find_assembly_key(
+            sample_id, _as_python(group.iloc[0].get("run_number", run_number))
+        )
         if key in existing_keys:
             duplicates.append(f"assembly {sample_id} run {key[1] or '(none)'}")
             assembly_lookup[sample_id] = existing_keys[key]
@@ -259,8 +268,12 @@ def _ingest_assemblies(
             ),
             nanopore_path=_as_python(group.iloc[0].get("nanopore_path")),
             run_number=_as_python(group.iloc[0].get("run_number", run_number)),
-            sunbeam_version=_as_python(group.iloc[0].get("sunbeam_version", sunbeam_version)),
-            sbx_sga_version=_as_python(group.iloc[0].get("sbx_sga_version", sbx_sga_version)),
+            sunbeam_version=_as_python(
+                group.iloc[0].get("sunbeam_version", sunbeam_version)
+            ),
+            sbx_sga_version=_as_python(
+                group.iloc[0].get("sbx_sga_version", sbx_sga_version)
+            ),
             sunbeam_output_path=_as_python(
                 group.iloc[0].get("sunbeam_output_path", resolved_output_path)
             ),
@@ -287,9 +300,15 @@ def _ingest_assemblies(
                         cds=_as_python(first.get("cds")),
                         completeness=_as_python(first.get("completeness")),
                         contamination=_as_python(first.get("contamination")),
-                        min_contig_coverage=_as_python(first.get("min_contig_coverage")),
-                        avg_contig_coverage=_as_python(first.get("avg_contig_coverage")),
-                        max_contig_coverage=_as_python(first.get("max_contig_coverage")),
+                        min_contig_coverage=_as_python(
+                            first.get("min_contig_coverage")
+                        ),
+                        avg_contig_coverage=_as_python(
+                            first.get("avg_contig_coverage")
+                        ),
+                        max_contig_coverage=_as_python(
+                            first.get("max_contig_coverage")
+                        ),
                     )
                 )
 
@@ -356,9 +375,7 @@ def _lookup_assembly_id(
         if sample_id in assembly_lookup:
             return assembly_lookup[sample_id].id
         assemblies = (
-            session.query(Assembly)
-            .filter(Assembly.isolate_id == sample_id)
-            .all()
+            session.query(Assembly).filter(Assembly.isolate_id == sample_id).all()
         )
         if len(assemblies) == 1:
             return assemblies[0].id
@@ -386,7 +403,9 @@ def _ingest_qc_records(
     added = 0
     duplicates = []
     for _, row in df.iterrows():
-        assembly_id = _lookup_assembly_id(row, assembly_lookup, session, sample_col, run_number)
+        assembly_id = _lookup_assembly_id(
+            row, assembly_lookup, session, sample_col, run_number
+        )
         if assembly_id is None:
             duplicates.append("unmatched assembly for QC")
             continue
@@ -438,7 +457,9 @@ def _ingest_taxonomic_assignments(
     duplicates = []
     seen = set()
     for _, row in df.iterrows():
-        assembly_id = _lookup_assembly_id(row, assembly_lookup, session, sample_col, run_number)
+        assembly_id = _lookup_assembly_id(
+            row, assembly_lookup, session, sample_col, run_number
+        )
         if assembly_id is None:
             duplicates.append("unmatched assembly for taxonomic assignment")
             continue
@@ -490,7 +511,9 @@ def _ingest_contaminants(
     duplicates = []
     seen = set()
     for _, row in df.iterrows():
-        assembly_id = _lookup_assembly_id(row, assembly_lookup, session, sample_col, run_number)
+        assembly_id = _lookup_assembly_id(
+            row, assembly_lookup, session, sample_col, run_number
+        )
         if assembly_id is None:
             duplicates.append("unmatched assembly for contaminant")
             continue
@@ -534,7 +557,9 @@ def _ingest_amr_records(
         "Element Type": "element_type",
         "Resistance Product": "resistance_product",
     }
-    df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True)
+    df.rename(
+        columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True
+    )
 
     gene_cols = [
         "contig_id",
@@ -548,7 +573,9 @@ def _ingest_amr_records(
     duplicates = []
     seen = set()
     for _, row in df.iterrows():
-        assembly_id = _lookup_assembly_id(row, assembly_lookup, session, sample_col, run_number)
+        assembly_id = _lookup_assembly_id(
+            row, assembly_lookup, session, sample_col, run_number
+        )
         if assembly_id is None:
             duplicates.append("unmatched assembly for antimicrobial")
             continue
