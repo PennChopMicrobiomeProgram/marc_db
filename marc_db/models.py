@@ -92,6 +92,13 @@ class TaxonomicAssignment(Base):
     tool = Column(Text)
     classification = Column(Text)
     comment = Column(Text, nullable=True)
+    taxonomic_classification = Column(Text)
+    taxonomic_abundance = Column(Float)
+    mash_contamination = Column(Float)
+    mash_contaminated_spp = Column(Text)
+    st = Column(Text)
+    st_schema = Column(Text)
+    allele_assignment = Column(Text)
 
 
 class Contaminant(Base):

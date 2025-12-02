@@ -29,9 +29,9 @@ def session(engine):
 
 @pytest.fixture(scope="module")
 def ingest_data(session):
-    ingest_tsv(Path(__file__).parent / "test_multi_aliquot.tsv", session)
+    ingest_tsv(str(Path(__file__).parent / "test_multi_aliquot.tsv"), session)
     df = ingest_assembly_tsv(
-        Path(__file__).parent / "test_assembly_data.tsv",
+        str(Path(__file__).parent / "test_assembly_data.tsv"),
         run_number="1",
         sunbeam_version="v1",
         sbx_sga_version="v1",
