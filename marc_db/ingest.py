@@ -23,47 +23,57 @@ def _as_python(value):
     return value.item() if hasattr(value, "item") else value
 
 
-def _derive_sunbeam_output_path(
-    config_file: Optional[str], sunbeam_output_path: Optional[str]
-) -> Optional[str]:
-    """Return the sunbeam output path, deriving it from ``config_file`` if needed."""
-
-    if sunbeam_output_path:
-        return sunbeam_output_path
-
-    if config_file:
-        cfg_path = Path(config_file)
-        return str(cfg_path.parent / "sunbeam_output")
-
-    return None
+def _format_large_list(items: Iterable[str], limit: int = 10) -> str:
+    items = list(items)
+    if len(items) <= limit:
+        return ", ".join(items)
+    else:
+        displayed = ", ".join(items[:limit])
+        return f"{displayed}, and {len(items) - limit} more..."
 
 
-def _rename_columns(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-    df.columns = df.columns.str.strip()
-    rename_map = {
-        "Number of Contigs": "contig_count",
-        "Genome Size": "genome_size",
-        "N50": "n50",
-        "GC Content": "gc_content",
-        "CDS": "cds",
-        "CheckM_Completeness": "completeness",
-        "CheckM_Contamination": "contamination",
-        "Coverage": "avg_contig_coverage",
-        "Schema": "st_schema",
-        "ST": "st",
-        "Alleles": "allele_assignment",
-        "Mash_Contamination": "mash_contamination",
-        "Contaminated_Spp": "mash_contaminated_spp",
-        "Taxonomic_Abundance": "taxonomic_abundance",
-        "Taxonomic_Classification": "taxonomic_classification",
-        "Sample": "SampleID",
-        "Run": "run_number",
-    }
-    df.rename(
-        columns={k: v for k, v in rename_map.items() if k in df.columns}, inplace=True
+def _check_orphan_assemblies(session: Session, isolates_df: Optional[pd.DataFrame], assemblies_df: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
+    if assemblies_df is None:
+        return
+    existing_sample_ids = set(
+        iso.sample_id for iso in session.query(Isolate).all()
     )
-    return df
+    if isolates_df is not None:
+        existing_sample_ids.update(isolates_df["SampleID"].tolist())
+    
+    orphans = [
+        row["SampleID"]
+        for _, row in assemblies_df.iterrows()
+        if row["SampleID"] not in existing_sample_ids
+    ]
+
+    if orphans:
+        print(
+            f"Orphan assemblies found with no matching isolate: {_format_large_list(orphans)}"
+        )
+    return assemblies_df[~assemblies_df["SampleID"].isin(orphans)]
+    
+
+def _check_orphan_info(session: Session, assemblies: Optional[pd.DataFrame], assembly_qcs: Optional[pd.DataFrame], taxonomic_assignments: Optional[pd.DataFrame], contaminants: Optional[pd.DataFrame], antimicrobials: Optional[pd.DataFrame]):
+    if all(df is None for df in [assembly_qcs, taxonomic_assignments, contaminants, antimicrobials]):
+        return
+    if assemblies is None:
+        return
+    existing_sample_ids = set(row["SampleID"] for _, row in assemblies.iterrows())
+    for df in [assembly_qcs, taxonomic_assignments, contaminants, antimicrobials]:
+        if df is None:
+            continue
+        
+        orphans = [
+            row["SampleID"]
+            for _, row in df.iterrows()
+            if row["SampleID"] not in existing_sample_ids
+        ]
+
+        if orphans:
+            raise ValueError(
+                f"Orphan records found with no matching isolate: {_format_large_list(orphans)}"
+            )
 
 
 def _format_duplicates(section: str, duplicates: Iterable[str]) -> str:
@@ -92,13 +102,6 @@ def _ensure_required_columns(df: pd.DataFrame, required: Iterable[str]):
     missing = [col for col in required if col not in df.columns]
     if missing:
         raise ValueError(f"Missing required column(s): {', '.join(missing)}")
-
-
-def _parse_sample_column(df: pd.DataFrame) -> str:
-    for candidate in ["SampleID", "Sample", "sample_id"]:
-        if candidate in df.columns:
-            return candidate
-    raise ValueError("Could not find a sample identifier column (SampleID or Sample)")
 
 
 def _ingest_isolates(
@@ -183,211 +186,51 @@ def _ingest_isolates(
     }
 
 
-def _find_assembly_key(
-    isolate_id: str, run_number: Optional[str]
-) -> Tuple[str, Optional[str]]:
-    return (isolate_id, run_number or "")
-
-
 def _ingest_assemblies(
     file_path: str,
     *,
     session: Session,
     report: Dict[str, Dict[str, object]],
-    run_number: Optional[str] = None,
-    sunbeam_version: Optional[str] = None,
-    sbx_sga_version: Optional[str] = None,
-    metagenomic_sample_id: Optional[str] = None,
-    metagenomic_run_id: Optional[str] = None,
-    config_file: Optional[str] = None,
-    sunbeam_output_path: Optional[str] = None,
-    include_qc: bool = True,
-    include_tax: bool = True,
-    include_amr: bool = True,
 ) -> Dict[str, Assembly]:
-    df = _rename_columns(pd.read_csv(file_path, sep="\t"))
-    sample_col = _parse_sample_column(df)
+    df = pd.read_csv(file_path, sep="\t")
 
-    sample_ids = df[sample_col].unique().tolist()
-    resolved_output_path = _derive_sunbeam_output_path(config_file, sunbeam_output_path)
-    existing_keys = {
-        _find_assembly_key(asm.isolate_id, asm.run_number): asm
-        for asm in session.query(Assembly).filter(Assembly.isolate_id.in_(sample_ids))
-    }
-
-    added = 0
-    duplicates = []
-    assembly_lookup: Dict[str, Assembly] = {}
-
-    gene_cols = [
-        "contig_id",
-        "gene_symbol",
-        "gene_name",
-        "accession",
-        "element_type",
-        "resistance_product",
+    new = 0
+    duplicates = [
+        asm
+        for asm in session.query(Assembly).filter(Assembly.isolate_id.in_(set(df["SampleID"].unique().tolist()))).all()
     ]
-    qc_cols = [
-        "contig_count",
-        "genome_size",
-        "n50",
-        "gc_content",
-        "cds",
-        "completeness",
-        "contamination",
-        "min_contig_coverage",
-        "avg_contig_coverage",
-        "max_contig_coverage",
+    orphans = [
+        row["SampleID"]
+        for _, row in df.iterrows()
+        if not session.get(Isolate, row["SampleID"])
     ]
-    tax_cols = [
-        "taxonomic_classification",
-        "taxonomic_abundance",
-        "mash_contamination",
-        "mash_contaminated_spp",
-        "st",
-        "st_schema",
-        "allele_assignment",
-    ]
+    lookup: Dict[str, Assembly] = {}
 
-    for sample_id, group in df.groupby(sample_col):
-        key = _find_assembly_key(
-            sample_id, _as_python(group.iloc[0].get("run_number", run_number))
-        )
-        if key in existing_keys:
-            duplicates.append(f"assembly {sample_id} run {key[1] or '(none)'}")
-            assembly_lookup[sample_id] = existing_keys[key]
+    for row in df.itertuples():
+        if row.SampleID in orphans:
             continue
-
         asm = Assembly(
-            isolate_id=sample_id,
-            metagenomic_sample_id=_as_python(
-                group.iloc[0].get("metagenomic_sample_id", metagenomic_sample_id)
-            ),
-            metagenomic_run_id=_as_python(
-                group.iloc[0].get("metagenomic_run_id", metagenomic_run_id)
-            ),
-            nanopore_path=_as_python(group.iloc[0].get("nanopore_path")),
-            run_number=_as_python(group.iloc[0].get("run_number", run_number)),
-            sunbeam_version=_as_python(
-                group.iloc[0].get("sunbeam_version", sunbeam_version)
-            ),
-            sbx_sga_version=_as_python(
-                group.iloc[0].get("sbx_sga_version", sbx_sga_version)
-            ),
-            sunbeam_output_path=_as_python(
-                group.iloc[0].get("sunbeam_output_path", resolved_output_path)
-            ),
-            ncbi_id=_as_python(group.iloc[0].get("ncbi_id")),
+            isolate_id=row.SampleID,
+            metagenomic_sample_id=getattr(row, "metagenomic_sample_id", None),
+            metagenomic_run_id=getattr(row, "metagenomic_run_id", None),
+            nanopore_path=getattr(row, "nanopore_path", None),
+            run_number=getattr(row, "run_number", None),
+            sunbeam_version=getattr(row, "sunbeam_version", None),
+            sbx_sga_version=getattr(row, "sbx_sga_version", None),
+            sunbeam_output_path=getattr(row, "sunbeam_output_path", None),
+            ncbi_id=getattr(row, "ncbi_id", None),
         )
         session.add(asm)
-        session.flush()
-        added += 1
-        assembly_lookup[sample_id] = asm
+        lookup[str(row.SampleID)] = asm
+        new += 1
+    session.flush()
 
-        first = group.iloc[0]
-        if include_qc and any(col in group.columns for col in qc_cols):
-            existing_qc = session.get(AssemblyQC, asm.id)
-            if existing_qc:
-                duplicates.append(f"assembly_qc {asm.id}")
-            else:
-                session.add(
-                    AssemblyQC(
-                        assembly_id=asm.id,
-                        contig_count=_as_python(first.get("contig_count")),
-                        genome_size=_as_python(first.get("genome_size")),
-                        n50=_as_python(first.get("n50")),
-                        gc_content=_as_python(first.get("gc_content")),
-                        cds=_as_python(first.get("cds")),
-                        completeness=_as_python(first.get("completeness")),
-                        contamination=_as_python(first.get("contamination")),
-                        min_contig_coverage=_as_python(
-                            first.get("min_contig_coverage")
-                        ),
-                        avg_contig_coverage=_as_python(
-                            first.get("avg_contig_coverage")
-                        ),
-                        max_contig_coverage=_as_python(
-                            first.get("max_contig_coverage")
-                        ),
-                    )
-                )
-
-        if include_tax and any(col in group.columns for col in tax_cols):
-            seen_tax = set()
-            for _, row in group.iterrows():
-                tax_values = tuple(_as_python(row.get(col)) for col in tax_cols)
-                if tax_values in seen_tax:
-                    duplicates.append(f"taxonomic_assignment for {asm.id}")
-                    continue
-                if all(value is None for value in tax_values):
-                    continue
-                seen_tax.add(tax_values)
-                session.add(
-                    TaxonomicAssignment(
-                        assembly_id=asm.id,
-                        taxonomic_classification=tax_values[0],
-                        taxonomic_abundance=tax_values[1],
-                        mash_contamination=tax_values[2],
-                        mash_contaminated_spp=tax_values[3],
-                        st=tax_values[4],
-                        st_schema=tax_values[5],
-                        allele_assignment=tax_values[6],
-                    )
-                )
-
-        if include_amr and any(col in group.columns for col in gene_cols):
-            seen_amr: set[Tuple] = set()
-            for _, row in group.iterrows():
-                if not any(pd.notna(row.get(c)) for c in gene_cols):
-                    continue
-                amr_tuple = tuple(_as_python(row.get(col)) for col in gene_cols)
-                if amr_tuple in seen_amr:
-                    duplicates.append(f"antimicrobial for {asm.id}")
-                    continue
-                seen_amr.add(amr_tuple)
-                session.add(
-                    Antimicrobial(
-                        assembly_id=asm.id,
-                        contig_id=amr_tuple[0],
-                        gene_symbol=amr_tuple[1],
-                        gene_name=amr_tuple[2],
-                        accession=amr_tuple[3],
-                        element_type=amr_tuple[4],
-                        resistance_product=amr_tuple[5],
-                    )
-                )
-
-    report["assemblies"] = {"added": added, "duplicates": duplicates}
-    return assembly_lookup
-
-
-def _lookup_assembly_id(
-    row: pd.Series,
-    assembly_lookup: Dict[str, Assembly],
-    session: Session,
-    sample_col: Optional[str] = None,
-    run_number: Optional[str] = None,
-) -> Optional[int]:
-    if "assembly_id" in row:
-        return int(row["assembly_id"])
-    if sample_col and sample_col in row:
-        sample_id = row[sample_col]
-        if sample_id in assembly_lookup:
-            return assembly_lookup[sample_id].id
-        assemblies = (
-            session.query(Assembly).filter(Assembly.isolate_id == sample_id).all()
-        )
-        if len(assemblies) == 1:
-            return assemblies[0].id
-        if len(assemblies) > 1:
-            match = [
-                asm
-                for asm in assemblies
-                if (asm.run_number or "") == (run_number or "")
-            ]
-            if len(match) == 1:
-                return match[0].id
-    return None
+    report["assemblies"] = {
+        "added": new,
+        "duplicates": [f"{d.isolate_id} (id={d.id})" for d in duplicates],
+        "orphans": orphans,
+    }
+    return lookup
 
 
 def _ingest_qc_records(
@@ -396,7 +239,6 @@ def _ingest_qc_records(
     session: Session,
     report: Dict[str, Dict[str, object]],
     assembly_lookup: Dict[str, Assembly],
-    run_number: Optional[str] = None,
 ):
     df = _rename_columns(pd.read_csv(file_path, sep="\t"))
     sample_col = "SampleID" if "SampleID" in df.columns else None
@@ -602,21 +444,14 @@ def _ingest_amr_records(
 
 def ingest_from_tsvs(
     *,
-    isolates: Optional[str] = None,
-    assemblies: Optional[str] = None,
-    assembly_qcs: Optional[str] = None,
-    taxonomic_assignments: Optional[str] = None,
-    contaminants: Optional[str] = None,
-    antimicrobials: Optional[str] = None,
+    isolates: Optional[pd.DataFrame] = None,
+    assemblies: Optional[pd.DataFrame] = None,
+    assembly_qcs: Optional[pd.DataFrame] = None,
+    taxonomic_assignments: Optional[pd.DataFrame] = None,
+    contaminants: Optional[pd.DataFrame] = None,
+    antimicrobials: Optional[pd.DataFrame] = None,
     yes: bool = False,
     session: Optional[Session] = None,
-    run_number: Optional[str] = None,
-    sunbeam_version: Optional[str] = None,
-    sbx_sga_version: Optional[str] = None,
-    metagenomic_sample_id: Optional[str] = None,
-    metagenomic_run_id: Optional[str] = None,
-    config_file: Optional[str] = None,
-    sunbeam_output_path: Optional[str] = None,
     input_fn: Callable[[str], str] = input,
 ) -> Dict[str, Dict[str, object]]:
     """Ingest a collection of TSV files with optional confirmation.
@@ -629,7 +464,9 @@ def ingest_from_tsvs(
     if session is None:
         session = get_session()
         created_session = True
-    report: Dict[str, Dict[str, object]] = {}
+    
+    _check_orphan_assemblies(session, assemblies)
+    _check_oprphan_info(session, assembly_qcs, taxonomic_assignments, contaminants, antimicrobials)
 
     trans = session.begin_nested() if session.in_transaction() else session.begin()
     try:
@@ -642,16 +479,6 @@ def ingest_from_tsvs(
                 assemblies,
                 session=session,
                 report=report,
-                run_number=run_number,
-                sunbeam_version=sunbeam_version,
-                sbx_sga_version=sbx_sga_version,
-                metagenomic_sample_id=metagenomic_sample_id,
-                metagenomic_run_id=metagenomic_run_id,
-                config_file=config_file,
-                sunbeam_output_path=sunbeam_output_path,
-                include_qc=not assembly_qcs,
-                include_tax=not taxonomic_assignments,
-                include_amr=not antimicrobials,
             )
         if assembly_qcs:
             _ingest_qc_records(
@@ -659,7 +486,6 @@ def ingest_from_tsvs(
                 session=session,
                 report=report,
                 assembly_lookup=assembly_lookup,
-                run_number=run_number,
             )
         if taxonomic_assignments:
             _ingest_taxonomic_assignments(
@@ -667,7 +493,6 @@ def ingest_from_tsvs(
                 session=session,
                 report=report,
                 assembly_lookup=assembly_lookup,
-                run_number=run_number,
             )
         if contaminants:
             _ingest_contaminants(
@@ -675,7 +500,6 @@ def ingest_from_tsvs(
                 session=session,
                 report=report,
                 assembly_lookup=assembly_lookup,
-                run_number=run_number,
             )
         if antimicrobials:
             _ingest_amr_records(
@@ -683,7 +507,6 @@ def ingest_from_tsvs(
                 session=session,
                 report=report,
                 assembly_lookup=assembly_lookup,
-                run_number=run_number,
             )
 
         summary = _summarize(report)
@@ -706,71 +529,3 @@ def ingest_from_tsvs(
 
     return report
 
-
-def ingest_tsv(file_path: str, session: Optional[Session] = None) -> pd.DataFrame:
-    """Backward compatible wrapper for isolate/aliquot ingestion."""
-
-    ingest_from_tsvs(isolates=file_path, yes=True, session=session)
-    return pd.read_csv(file_path, delimiter="\t")
-
-
-def ingest_assembly_tsv(
-    file_path: str,
-    *,
-    metagenomic_sample_id: Optional[str] = None,
-    metagenomic_run_id: Optional[str] = None,
-    run_number: Optional[str] = None,
-    sunbeam_version: Optional[str] = None,
-    sbx_sga_version: Optional[str] = None,
-    config_file: Optional[str] = None,
-    sunbeam_output_path: Optional[str] = None,
-    session: Optional[Session] = None,
-) -> pd.DataFrame:
-    """Backward compatible wrapper around :func:`ingest_from_tsvs`."""
-
-    ingest_from_tsvs(
-        assemblies=file_path,
-        antimicrobials=file_path,
-        assembly_qcs=file_path,
-        taxonomic_assignments=file_path,
-        run_number=run_number,
-        sunbeam_version=sunbeam_version,
-        sbx_sga_version=sbx_sga_version,
-        metagenomic_sample_id=metagenomic_sample_id,
-        metagenomic_run_id=metagenomic_run_id,
-        config_file=config_file,
-        sunbeam_output_path=sunbeam_output_path,
-        yes=True,
-        session=session,
-    )
-    return pd.read_csv(file_path, sep="\t")
-
-
-def ingest_antimicrobial_tsv(
-    file_path: str,
-    *,
-    metagenomic_sample_id: Optional[str] = None,
-    metagenomic_run_id: Optional[str] = None,
-    run_number: Optional[str] = None,
-    sunbeam_version: Optional[str] = None,
-    sbx_sga_version: Optional[str] = None,
-    config_file: Optional[str] = None,
-    sunbeam_output_path: Optional[str] = None,
-    session: Optional[Session] = None,
-) -> pd.DataFrame:
-    """Backward compatible wrapper around :func:`ingest_from_tsvs`."""
-
-    ingest_from_tsvs(
-        antimicrobials=file_path,
-        assemblies=file_path,
-        run_number=run_number,
-        sunbeam_version=sunbeam_version,
-        sbx_sga_version=sbx_sga_version,
-        metagenomic_sample_id=metagenomic_sample_id,
-        metagenomic_run_id=metagenomic_run_id,
-        config_file=config_file,
-        sunbeam_output_path=sunbeam_output_path,
-        yes=True,
-        session=session,
-    )
-    return pd.read_csv(file_path, sep="\t")
