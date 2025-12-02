@@ -44,6 +44,7 @@ def main():
     if args.command == "init":
         create_database(db_url)
     elif args.command == "mock_db":
+        create_database(db_url)
         fill_mock_db(get_session(db_url))
     elif args.command == "ingest":
         parser_ingest = argparse.ArgumentParser(
