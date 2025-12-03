@@ -50,7 +50,8 @@ def _ingest_isolates(df: pd.DataFrame, session: Session):
     ]
     _ensure_required_columns(df, isolate_cols + ["Tube Barcode", "Box-name_position"])
 
-    df.columns = [
+    isolates = df[isolate_cols].copy()
+    isolates.columns = [
         "sample_id",
         "subject_id",
         "specimen_id",
@@ -59,13 +60,15 @@ def _ingest_isolates(df: pd.DataFrame, session: Session):
         "received_date",
         "cryobanking_date",
     ]
-    df["received_date"] = pd.to_datetime(df["received_date"], errors="coerce").dt.date
-    df["cryobanking_date"] = pd.to_datetime(
-        df["cryobanking_date"], errors="coerce"
+    isolates["received_date"] = pd.to_datetime(
+        isolates["received_date"], errors="coerce"
+    ).dt.date
+    isolates["cryobanking_date"] = pd.to_datetime(
+        isolates["cryobanking_date"], errors="coerce"
     ).dt.date
 
     added = []
-    for _, row in df.iterrows():
+    for _, row in isolates.iterrows():
         i = Isolate(**row.to_dict())
         if i.sample_id in {iso.sample_id for iso in added}:
             if i != next(iso for iso in added if iso.sample_id == i.sample_id):
@@ -214,6 +217,7 @@ def ingest_from_tsvs(
                 assemblies,
                 session=session,
             )
+            session.flush()
         if assembly_qcs is not None:
             _ingest_qc_records(
                 assembly_qcs,

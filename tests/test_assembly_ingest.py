@@ -1,16 +1,19 @@
+import pandas as pd
 import pytest
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from marc_db.models import (
     Base,
-    Isolate,
     Assembly,
     AssemblyQC,
     TaxonomicAssignment,
     Antimicrobial,
 )
-from marc_db.ingest import ingest_from_tsvs, ingest_tsv
+from marc_db.ingest import ingest_from_tsvs
+
+
+data_dir = Path(__file__).parent
 
 
 @pytest.fixture(scope="module")
@@ -29,36 +32,30 @@ def session(engine):
 
 @pytest.fixture(scope="module")
 def ingest_data(session):
-    data_dir = Path(__file__).parent
-    ingest_tsv(str(data_dir / "test_multi_aliquot.tsv"), session)
-    df = ingest_from_tsvs(
-        assemblies=str(data_dir / "test_assembly_data.tsv"),
-        assembly_qcs=str(data_dir / "test_assembly_data.tsv"),
-        taxonomic_assignments=str(data_dir / "test_taxonomic_assignment.tsv"),
-        antimicrobials=str(data_dir / "test_amr_data.tsv"),
-        run_number="1",
-        sunbeam_version="v1",
-        sbx_sga_version="v1",
-        config_file="cfg",
-        sunbeam_output_path="/sb",
+    ingest_from_tsvs(
+        isolates=pd.read_csv(data_dir / "test_multi_aliquot.tsv", sep="\t"),
+        assemblies=pd.read_csv(data_dir / "test_assembly_data.tsv", sep="\t"),
+        assembly_qcs=pd.read_csv(data_dir / "test_assembly_data.tsv", sep="\t"),
+        taxonomic_assignments=pd.read_csv(
+            data_dir / "test_taxonomic_assignment.tsv", sep="\t"
+        ),
+        antimicrobials=pd.read_csv(data_dir / "test_amr_data.tsv", sep="\t"),
         yes=True,
         session=session,
     )
-    return df, session
+    return session
 
 
 def test_counts(ingest_data):
-    _, session = ingest_data
-    assert session.query(Assembly).count() == 2
-    assert session.query(AssemblyQC).count() == 2
-    assert session.query(TaxonomicAssignment).count() == 2
-    assert session.query(Antimicrobial).count() == 8
+    assert ingest_data.query(Assembly).count() == 2
+    assert ingest_data.query(AssemblyQC).count() == 2
+    assert ingest_data.query(TaxonomicAssignment).count() == 2
+    assert ingest_data.query(Antimicrobial).count() == 8
 
 
 def test_taxonomic_assignment_fields(ingest_data):
-    _, session = ingest_data
     tax = (
-        session.query(TaxonomicAssignment)
+        ingest_data.query(TaxonomicAssignment)
         .order_by(TaxonomicAssignment.assembly_id)
         .all()
     )

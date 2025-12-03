@@ -1,10 +1,14 @@
+import pandas as pd
 import pytest
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from marc_db.models import Base, Assembly, Antimicrobial
-from marc_db.ingest import ingest_tsv, ingest_antimicrobial_tsv
+from marc_db.ingest import ingest_from_tsvs
+
+
+data_dir = Path(__file__).parent
 
 
 @pytest.fixture(scope="module")
@@ -23,16 +27,16 @@ def session(engine):
 
 @pytest.fixture(scope="module")
 def ingest_data(session):
-    ingest_tsv(Path(__file__).parent / "test_multi_aliquot.tsv", session)
-    df = ingest_antimicrobial_tsv(
-        Path(__file__).parent / "test_amr_data.tsv",
-        run_number="1",
+    ingest_from_tsvs(
+        isolates=pd.read_csv(data_dir / "test_multi_aliquot.tsv", sep="\t"),
+        assemblies=pd.read_csv(data_dir / "test_assembly_data.tsv", sep="\t"),
+        antimicrobials=pd.read_csv(data_dir / "test_amr_data.tsv", sep="\t"),
+        yes=True,
         session=session,
     )
-    return df, session
+    return session
 
 
 def test_amr_counts(ingest_data):
-    _, session = ingest_data
-    assert session.query(Assembly).count() == 2
-    assert session.query(Antimicrobial).count() == 8
+    assert ingest_data.query(Assembly).count() == 2
+    assert ingest_data.query(Antimicrobial).count() == 8

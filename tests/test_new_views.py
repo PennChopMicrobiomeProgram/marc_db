@@ -43,9 +43,7 @@ def setup_data(session):
     session.commit()
 
     qc = AssemblyQC(assembly_id=assembly.id, contig_count=10)
-    tax = TaxonomicAssignment(
-        assembly_id=assembly.id, taxonomic_classification="k__Bacteria"
-    )
+    tax = TaxonomicAssignment(assembly_id=assembly.id, classification="k__Bacteria")
     amr = Antimicrobial(assembly_id=assembly.id, gene_symbol="blaCTX")
     session.add_all([qc, tax, amr])
     session.commit()
@@ -62,7 +60,7 @@ def test_new_views(session, setup_data):
     assert iso_id == iso.sample_id
 
     tax_res, iso_id = get_taxonomic_assignments(session)[0]
-    assert tax_res.taxonomic_classification == tax.taxonomic_classification
+    assert tax_res.classification == tax.classification
     assert iso_id == iso.sample_id
 
     amr_res, iso_id = get_antimicrobials(session)[0]
