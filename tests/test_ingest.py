@@ -1,11 +1,15 @@
-import pytest
 import pandas as pd
+import pytest
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from marc_db.models import Base
-from marc_db.ingest import ingest_tsv
+
+from marc_db.ingest import ingest_from_tsvs
+from marc_db.models import Base, Aliquot, Isolate
 from marc_db.views import get_isolates, get_aliquots
+
+
+data_dir = Path(__file__).parent
 
 
 @pytest.fixture(scope="module")
@@ -24,26 +28,32 @@ def session(engine):
 
 @pytest.fixture(scope="module")
 def ingest(session):
-    # Ingest the tsv file without error
-    df = ingest_tsv(Path(__file__).parent / "test_multi_aliquot.tsv", session)
-    return df, session
+    isolates_df = pd.read_csv(data_dir / "test_multi_aliquot.tsv", sep="\t")
+    ingest_from_tsvs(isolates=isolates_df, yes=True, session=session)
+    return session
 
 
-def test_ingest_xlsx(ingest):
-    df, _ = ingest
-    assert not df.empty
+def test_ingest_isolates(ingest):
+    assert len(get_isolates(ingest)) == 2
 
 
 def test_views(ingest):
-    df, session = ingest
-
-    assert len(get_isolates(session)) > 0
-    assert len(get_aliquots(session)) > 0
-
-    assert len(get_isolates(session, sample_id="sample1")) == 1
-    assert len(get_aliquots(session, id=1)) == 1
+    assert len(get_isolates(ingest, sample_id="sample1")) == 1
+    assert len(get_aliquots(ingest, id=1)) == 1
 
 
-def test_inconsistent_duplicate_rows(session):
-    with pytest.raises(ValueError):
-        ingest_tsv(Path(__file__).parent / "test_bad_duplicates.tsv", session)
+def test_conflicting_duplicate_rows():
+    engine = create_engine("sqlite:///:memory:")
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    Base.metadata.create_all(engine)
+
+    isolates_df = pd.read_csv(data_dir / "test_bad_duplicates.tsv", sep="\t")
+    ingest_from_tsvs(isolates=isolates_df, yes=True, session=session)
+
+    isolate = session.query(Isolate).filter_by(sample_id="sample1").one()
+    assert isolate.subject_id == 1
+    assert session.query(Aliquot).count() == 2
+
+    session.close()
+    engine.dispose()
