@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Dict, Iterable, Optional, Tuple, Union
+from typing import Callable, Dict, Iterable, Optional, Union
 
 import pandas as pd
 from sqlalchemy.orm import Session
