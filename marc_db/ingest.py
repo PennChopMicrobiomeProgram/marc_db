@@ -38,7 +38,7 @@ def _ensure_required_columns(df: pd.DataFrame, required: Iterable[str]):
         raise ValueError(f"Missing required column(s): {', '.join(missing)}")
 
 
-def _load_dataframe(data: Optional[Union[pd.DataFrame, Path, str]]):
+def _load_dataframe(data: Optional[Union[pd.DataFrame, Path, str]]) -> Optional[pd.DataFrame]:
     if data is None or isinstance(data, pd.DataFrame):
         return data
     return pd.read_csv(Path(data), sep="\t")
