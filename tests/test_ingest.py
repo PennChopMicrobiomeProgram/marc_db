@@ -57,3 +57,19 @@ def test_conflicting_duplicate_rows():
 
     session.close()
     engine.dispose()
+
+
+def test_ingest_accepts_path_strings():
+    engine = create_engine("sqlite:///:memory:")
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    Base.metadata.create_all(engine)
+
+    tsv_path = str(data_dir / "test_multi_aliquot.tsv")
+    ingest_from_tsvs(isolates=tsv_path, yes=True, session=session)
+
+    assert len(get_isolates(session)) == 2
+    assert len(get_aliquots(session)) == 5
+
+    session.close()
+    engine.dispose()

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Tuple, Callable
+from typing import Callable, Dict, Iterable, Optional, Tuple, Union
 
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -36,6 +36,12 @@ def _ensure_required_columns(df: pd.DataFrame, required: Iterable[str]):
     missing = [col for col in required if col not in df.columns]
     if missing:
         raise ValueError(f"Missing required column(s): {', '.join(missing)}")
+
+
+def _load_dataframe(data: Optional[Union[pd.DataFrame, Path, str]]):
+    if data is None or isinstance(data, pd.DataFrame):
+        return data
+    return pd.read_csv(Path(data), sep="\t")
 
 
 def _ingest_isolates(df: pd.DataFrame, session: Session):
@@ -202,6 +208,12 @@ def ingest_from_tsvs(
     """
 
     created_session = False
+    isolates = _load_dataframe(isolates)
+    assemblies = _load_dataframe(assemblies)
+    assembly_qcs = _load_dataframe(assembly_qcs)
+    taxonomic_assignments = _load_dataframe(taxonomic_assignments)
+    contaminants = _load_dataframe(contaminants)
+    antimicrobials = _load_dataframe(antimicrobials)
     if session is None:
         session = get_session()
         created_session = True
