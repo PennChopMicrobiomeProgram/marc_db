@@ -75,6 +75,25 @@ def test_ingest_accepts_path_strings():
     engine.dispose()
 
 
+def test_duplicate_isolate_rows_do_not_warn_when_identical(capsys):
+    engine = create_engine("sqlite:///:memory:")
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    Base.metadata.create_all(engine)
+
+    isolates_df = pd.read_csv(data_dir / "test_multi_aliquot.tsv", sep="\t")
+
+    ingest_from_tsvs(isolates=isolates_df, yes=True, session=session)
+
+    captured = capsys.readouterr()
+    assert "Conflicting isolate data" not in captured.out
+    assert len(get_isolates(session)) == 2
+    assert len(get_aliquots(session)) == 5
+
+    session.close()
+    engine.dispose()
+
+
 def test_ingest_bacteremia_example(tmp_path):
     engine = create_engine("sqlite:///:memory:")
     Session = sessionmaker(bind=engine)

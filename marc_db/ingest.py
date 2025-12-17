@@ -73,15 +73,20 @@ def _ingest_isolates(df: pd.DataFrame, session: Session):
         isolates["cryobanking_date"], errors="coerce"
     ).dt.date
 
-    added = []
+    added = {}
     for _, row in isolates.iterrows():
-        i = Isolate(**row.to_dict())
-        if i.sample_id in {iso.sample_id for iso in added}:
-            if i != next(iso for iso in added if iso.sample_id == i.sample_id):
-                print(f"Conflicting isolate data for SampleID {i.sample_id}")
+        isolate_kwargs = row.to_dict()
+        sample_id = isolate_kwargs["sample_id"]
+
+        existing = added.get(sample_id)
+        if existing:
+            if existing != isolate_kwargs:
+                print(f"Conflicting isolate data for SampleID {sample_id}")
             continue
-        session.add(i)
-        added.append(i)
+
+        isolate = Isolate(**isolate_kwargs)
+        session.add(isolate)
+        added[sample_id] = isolate_kwargs
 
     aliquot_df = df[["Tube Barcode", "Box-name_position", "SampleID"]].copy()
     aliquot_df.columns = ["tube_barcode", "box_name", "isolate_id"]
