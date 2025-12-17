@@ -38,7 +38,9 @@ def _ensure_required_columns(df: pd.DataFrame, required: Iterable[str]):
         raise ValueError(f"Missing required column(s): {', '.join(missing)}")
 
 
-def _load_dataframe(data: Optional[Union[pd.DataFrame, Path, str]]) -> Optional[pd.DataFrame]:
+def _load_dataframe(
+    data: Optional[Union[pd.DataFrame, Path, str]]
+) -> Optional[pd.DataFrame]:
     if data is None or isinstance(data, pd.DataFrame):
         return data
     return pd.read_csv(Path(data), sep="\t")
@@ -66,27 +68,62 @@ def _ingest_isolates(df: pd.DataFrame, session: Session):
         "received_date",
         "cryobanking_date",
     ]
+    isolates["subject_id"] = pd.to_numeric(
+        isolates["subject_id"], errors="coerce"
+    ).astype("Int64")
+    isolates["specimen_id"] = pd.to_numeric(
+        isolates["specimen_id"], errors="coerce"
+    ).astype("Int64")
     isolates["received_date"] = pd.to_datetime(
         isolates["received_date"], errors="coerce"
     ).dt.date
+    isolates["received_date"] = isolates["received_date"].apply(
+        lambda x: None if pd.isna(x) else x
+    )
     isolates["cryobanking_date"] = pd.to_datetime(
         isolates["cryobanking_date"], errors="coerce"
     ).dt.date
+    isolates["cryobanking_date"] = isolates["cryobanking_date"].apply(
+        lambda x: None if pd.isna(x) else x
+    )
 
-    added = []
+    added = {}
     for _, row in isolates.iterrows():
-        i = Isolate(**row.to_dict())
-        if i.sample_id in {iso.sample_id for iso in added}:
-            if i != next(iso for iso in added if iso.sample_id == i.sample_id):
-                print(f"Conflicting isolate data for SampleID {i.sample_id}")
+        isolate_kwargs = row.to_dict()
+        sample_id = isolate_kwargs["sample_id"]
+
+        existing = added.get(sample_id)
+        if existing:
+            if existing != isolate_kwargs:
+                print(f"Conflicting isolate data for SampleID {sample_id}")
             continue
-        session.add(i)
-        added.append(i)
+
+        isolate = Isolate(**isolate_kwargs)
+        if not isinstance(isolate.subject_id, int) or not isinstance(
+            isolate.specimen_id, int
+        ):
+            print(
+                f"Invalid subject_id or specimen_id for SampleID {sample_id}: {isolate.subject_id}, {isolate.specimen_id}"
+            )
+        session.add(isolate)
+        try:
+            session.flush()
+        except Exception as e:
+            print(f"Error adding isolate with SampleID {sample_id}: {e}")
+            session.rollback()
+            continue
+        added[sample_id] = isolate_kwargs
 
     aliquot_df = df[["Tube Barcode", "Box-name_position", "SampleID"]].copy()
     aliquot_df.columns = ["tube_barcode", "box_name", "isolate_id"]
     for _, row in aliquot_df.iterrows():
         session.add(Aliquot(**row.to_dict()))
+        try:
+            session.flush()
+        except Exception as e:
+            print(f"Error adding aliquot for SampleID {row.isolate_id}: {e}")
+            session.rollback()
+            continue
 
 
 def _ingest_assemblies(
