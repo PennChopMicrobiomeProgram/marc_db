@@ -37,18 +37,26 @@ def main():
         default=None,
     )
 
-    # Check for -h/--help in any position
-    if "-h" in sys.argv or "--help" in sys.argv:
-        parser.print_help()
-        sys.exit(0)
-    
     args, remaining = parser.parse_known_args()
 
     db_url = args.db or get_marc_db_url()
 
     if args.command == "init":
+        # Including a separate parser here for proper behavior e.g. with `marc_db init -h`
+        parser_init = argparse.ArgumentParser(
+            prog="marc_db init",
+            usage="%(prog)s",
+            description="Initialize a new database.",
+        )
+        args_init = parser_init.parse_args(remaining)
         create_database(db_url)
     elif args.command == "mock_db":
+        parser_mock = argparse.ArgumentParser(
+            prog="marc_db mock_db",
+            usage="%(prog)s",
+            description="Fill mock values into an empty db (for testing).",
+        )
+        args_mock = parser_mock.parse_args(remaining)
         create_database(db_url)
         fill_mock_db(get_session(db_url))
     elif args.command == "ingest":
