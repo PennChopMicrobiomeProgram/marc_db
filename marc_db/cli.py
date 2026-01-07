@@ -37,6 +37,11 @@ def main():
         default=None,
     )
 
+    # Check for -h/--help in any position
+    if "-h" in sys.argv or "--help" in sys.argv:
+        parser.print_help()
+        sys.exit(0)
+    
     args, remaining = parser.parse_known_args()
 
     db_url = args.db or get_marc_db_url()
