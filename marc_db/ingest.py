@@ -39,7 +39,7 @@ def _ensure_required_columns(df: pd.DataFrame, required: Iterable[str]):
 
 
 def _load_dataframe(
-    data: Optional[Union[pd.DataFrame, Path, str]]
+    data: Optional[Union[pd.DataFrame, Path, str]],
 ) -> Optional[pd.DataFrame]:
     if data is None or isinstance(data, pd.DataFrame):
         return data
@@ -202,8 +202,8 @@ def _ingest_contaminants(
             Contaminant(
                 assembly_id=asm.id if asm else None,
                 tool=_as_python(row.get("tool")),
-                contaminant=_as_python(row.get("contaminant")),
-                proportion=_as_python(row.get("proportion")),
+                classification=_as_python(row.get("classification")),
+                confidence=_as_python(row.get("confidence")),
             )
         )
 
@@ -222,6 +222,8 @@ def _ingest_amr_records(
                 gene_symbol=_as_python(row.get("gene_symbol")),
                 gene_name=_as_python(row.get("gene_name")),
                 accession=_as_python(row.get("accession")),
+                element_type=_as_python(row.get("element_type")),
+                resistance_product=_as_python(row.get("resistance_product")),
             )
         )
 
