@@ -3,6 +3,7 @@ import sys
 from marc_db import __version__
 from marc_db.db import create_database, get_session, get_marc_db_url
 from marc_db.ingest import ingest_from_tsvs
+from marc_db.remove import remove_isolate
 from marc_db.mock import fill_mock_db
 
 
@@ -13,6 +14,7 @@ def main():
         "  init         \tInitialize a new database.\n"
         "  mock_db      \tFill mock values into an empty db (for testing).\n"
         "  ingest       \tIngest data from TSV files into the database.\n"
+        "  remove       \tRemove an isolate and associated records.\n"
     )
 
     parser = argparse.ArgumentParser(
@@ -98,6 +100,25 @@ def main():
             contaminants=args_ingest.contaminants,
             antimicrobials=args_ingest.antimicrobials,
             yes=args_ingest.yes,
+            session=get_session(db_url),
+        )
+    elif args.command == "remove":
+        parser_remove = argparse.ArgumentParser(
+            prog="marc_db remove",
+            usage="%(prog)s --sample-id SAMPLE_ID",
+            description="Remove an isolate and its associated data.",
+        )
+        parser_remove.add_argument(
+            "--sample-id", required=True, help="SampleID of the isolate to remove."
+        )
+        parser_remove.add_argument(
+            "--yes", action="store_true", help="Skip confirmation prompt."
+        )
+        args_remove = parser_remove.parse_args(remaining)
+        create_database(db_url)
+        remove_isolate(
+            sample_id=args_remove.sample_id,
+            yes=args_remove.yes,
             session=get_session(db_url),
         )
     else:
