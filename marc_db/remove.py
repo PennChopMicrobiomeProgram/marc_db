@@ -1,5 +1,6 @@
 from typing import Callable, Optional
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from marc_db.db import get_session
@@ -15,11 +16,7 @@ from marc_db.models import (
 
 
 def _summarize_isolate(session: Session, sample_id: str) -> dict:
-    assembly_ids = (
-        session.query(Assembly.id)
-        .filter(Assembly.isolate_id == sample_id)
-        .subquery()
-    )
+    assembly_ids = select(Assembly.id).where(Assembly.isolate_id == sample_id)
     return {
         "aliquots": session.query(Aliquot)
         .filter(Aliquot.isolate_id == sample_id)
@@ -76,11 +73,7 @@ def remove_isolate(
                 print("Removal cancelled.")
                 return
 
-        assembly_ids = (
-            session.query(Assembly.id)
-            .filter(Assembly.isolate_id == sample_id)
-            .subquery()
-        )
+        assembly_ids = select(Assembly.id).where(Assembly.isolate_id == sample_id)
 
         session.query(Antimicrobial).filter(
             Antimicrobial.assembly_id.in_(assembly_ids)
