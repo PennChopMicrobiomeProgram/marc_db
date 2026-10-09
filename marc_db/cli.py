@@ -65,10 +65,10 @@ def main():
         parser_ingest = argparse.ArgumentParser(
             prog="marc_db ingest",
             usage="%(prog)s [--isolates FILE] [--assemblies FILE] [--assembly-qcs FILE] "
-            "[--taxonomic-assignments FILE] [--contaminants FILE] [--antimicrobials FILE]",
+            "[--taxonomic-assignments FILE] [--contaminants FILE] [--antimicrobials FILE] [--ast FILE]",
             description=(
                 "Ingest isolates, assemblies, QC, taxonomic assignments, contaminants, "
-                "and antimicrobials from TSV files."
+                "antimicrobials and ast info from TSV files."
             ),
         )
         parser_ingest.add_argument(
@@ -88,6 +88,9 @@ def main():
             "--antimicrobials", help="TSV containing antimicrobial calls."
         )
         parser_ingest.add_argument(
+            "--ast", help="TSV containing antibiotic susceptibility testing information from clinical lab."
+        )
+        parser_ingest.add_argument(
             "--yes", action="store_true", help="Skip confirmation prompt."
         )
         args_ingest = parser_ingest.parse_args(remaining)
@@ -99,6 +102,7 @@ def main():
             taxonomic_assignments=args_ingest.taxonomic_assignments,
             contaminants=args_ingest.contaminants,
             antimicrobials=args_ingest.antimicrobials,
+            ast=args_ingest.ast,
             yes=args_ingest.yes,
             session=get_session(db_url),
         )

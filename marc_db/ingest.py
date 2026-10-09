@@ -3,6 +3,7 @@ from typing import Callable, Dict, Iterable, Optional, Union
 
 import pandas as pd
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from marc_db.db import get_session
 from marc_db.models import (
@@ -13,6 +14,7 @@ from marc_db.models import (
     TaxonomicAssignment,
     Antimicrobial,
     Contaminant,
+    Ast
 )
 
 
@@ -227,6 +229,24 @@ def _ingest_amr_records(
             )
         )
 
+def _ingest_ast_records(
+    df: pd.DataFrame,
+    session: Session,
+):
+    for _, row in df.iterrows():
+        specimen = _as_python(row.get("specimen_id"))
+        isolate = session.scalar(select(Isolate).where(Isolate.specimen_id == specimen))
+        session.add(
+            Ast(
+                specimen_id = specimen if isolate else None,
+                organism_name = _as_python(row.get("organism_name")),
+                antibiotic = _as_python(row.get("antibiotic")),
+                ast_method = _as_python(row.get("ast_method")),
+                susceptibility = _as_python(row.get("susceptibility")),
+                sensitivity_value = _as_python(row.get("sensitivity_value")),
+            )
+        )
+
 
 def ingest_from_tsvs(
     *,
@@ -236,6 +256,7 @@ def ingest_from_tsvs(
     taxonomic_assignments: Optional[pd.DataFrame] = None,
     contaminants: Optional[pd.DataFrame] = None,
     antimicrobials: Optional[pd.DataFrame] = None,
+    ast: Optional[pd.DataFrame] = None,
     yes: bool = False,
     session: Optional[Session] = None,
     input_fn: Callable[[str], str] = input,
@@ -253,6 +274,7 @@ def ingest_from_tsvs(
     taxonomic_assignments = _load_dataframe(taxonomic_assignments)
     contaminants = _load_dataframe(contaminants)
     antimicrobials = _load_dataframe(antimicrobials)
+    ast = _load_dataframe(ast)
     if session is None:
         session = get_session()
         created_session = True
@@ -260,6 +282,7 @@ def ingest_from_tsvs(
     trans = session.begin_nested() if session.in_transaction() else session.begin()
     try:
         assembly_lookup: Dict[str, Assembly] = {}
+        isolate_lookup: Dict[str, Isolate] = {}
 
         if isolates is not None:
             _ingest_isolates(isolates, session)
@@ -292,6 +315,11 @@ def ingest_from_tsvs(
                 antimicrobials,
                 session=session,
                 assembly_lookup=assembly_lookup,
+            )
+        if ast is not None:
+            _ingest_ast_records(
+                ast,
+                session=session,
             )
 
         # If there are any incompatibilities or constraint violations, they
