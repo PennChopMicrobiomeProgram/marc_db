@@ -24,6 +24,7 @@ class Isolate(Base):
     cryobanking_date = Column(Date, nullable=True)
 
     assemblies = relationship("Assembly", back_populates="isolate")
+    ast_records = relationship("Ast", back_populates="specimen")
 
 
 class Aliquot(Base):
@@ -123,10 +124,11 @@ class Ast(Base):
     __tablename__ = "ast"
 
     ast_id = Column(Integer, primary_key=True, autoincrement=True)
-    isolate_id = Column(Text, ForeignKey("isolates.specimen_id"), nullable=False)
+    specimen_id = Column(Text, ForeignKey("isolates.specimen_id"), nullable=False)
+    specimen = relationship("Isolate", back_populates="ast_records")
     organism_name = Column(Text)
     antibiotic = Column(Text)
-    sens_method = Column(Text, nullable=True)
+    ast_method = Column(Text, nullable=True)
     susceptibility = Column(Text, nullable=True)
     sensitivity_value = Column(Text, nullable=True)
 
